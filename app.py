@@ -210,6 +210,12 @@ def train_model(data):
     
     return model, mse, r2
 
+# Better approach to use environment variables
+import os
+
+bot_token = os.environ.get('TELEGRAM_BOT_TOKEN') or '123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ'
+chat_id = os.environ.get('TELEGRAM_CHAT_ID') or '123456789'
+
 # Modify the send_to_telegram function to support sending multiple files
 
 def send_to_telegram(message, files=None):
