@@ -326,7 +326,7 @@ if st.sidebar.button("Hitung Indeks Performans"):
         
         # Compare interpretations
         if interpretasi_aktual != interpretasi_prediksi:
-            st.info("Perbedaan interpretasi antara IP Aktual dan IP Prediksi: System memerlukan lebih banyak data untuk meningkatkan akurasi dugaan.")
+            st.info("Perbedaan interpretasi antara IP Aktual dan IP Prediksi: System memerlukan lebih banyak data untuk meningkatkan akurasi dugaan. Silahkan tambahkan data yang lain, agar Machine Learning dapat terus belajar")
         
         # Additional calculated values
         today = datetime.date.today()
