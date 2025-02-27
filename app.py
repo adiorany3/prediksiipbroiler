@@ -382,14 +382,14 @@ div.stButton > button:first-child {
 st.sidebar.header("Masukkan Parameter Produksi Broiler")
 
 # Add Telegram bot controls (place this before other sidebar elements)
-with st.sidebar.expander("Pengaturan Telegram Bot"):
+with st.sidebar.expander("Sync data"):
     bot_status = get_telegram_bot_status()
     st.write(f"Status Bot: {'Aktif' if bot_status else 'Nonaktif'}")
     
     if st.button("Aktifkan Bot" if not bot_status else "Nonaktifkan Bot"):
         new_status = toggle_telegram_bot()
         st.success(f"Bot sekarang {'Aktif' if new_status else 'Nonaktif'}")
-        st.experimental_rerun()  # Refresh the UI to reflect the change
+        st.rerun()  # Updated to use st.rerun() instead of st.experimental_rerun()
 
 # Add the retrain button to the sidebar
 if st.sidebar.button("Cek Model dengan Data Terbaru"):
