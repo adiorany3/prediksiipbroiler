@@ -9,6 +9,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 from PIL import Image
+import requests
 
 # Page configuration
 st.set_page_config(page_title="Hitung IP Broiler dengan mudah", page_icon="🐔")
@@ -209,6 +210,48 @@ def train_model(data):
     
     return model, mse, r2
 
+# Update the send_to_telegram function to support both messages and file uploads
+def send_to_telegram(message, file_path=None):
+    """Send notification and optionally a file to Telegram bot"""
+    try:
+        # You'll need to create a bot and get these credentials
+        # Store these in environment variables or a config file in production
+        bot_token = 'YOUR_BOT_TOKEN'  # Replace with your actual bot token
+        chat_id = 'YOUR_CHAT_ID'      # Replace with your chat ID
+        
+        # First send the text message
+        api_url = f'https://api.telegram.org/bot{bot_token}/sendMessage'
+        params = {
+            'chat_id': chat_id,
+            'text': message,
+            'parse_mode': 'HTML'
+        }
+        
+        response = requests.post(api_url, params=params)
+        
+        # If we have a file to send, upload it as a document
+        if file_path and os.path.exists(file_path):
+            api_url = f'https://api.telegram.org/bot{bot_token}/sendDocument'
+            
+            # Prepare the file for upload
+            with open(file_path, 'rb') as file:
+                files = {'document': file}
+                data = {'chat_id': chat_id}
+                
+                # Send caption with the file
+                data['caption'] = f"Model file (R² score: {r2:.4f})"
+                
+                # Upload the file
+                response = requests.post(api_url, data=data, files=files)
+            
+            return response.json()
+        
+        return response.json()
+    except Exception as e:
+        # Log error but don't crash the app
+        print(f"Error sending Telegram notification: {str(e)}")
+        return None
+
 # Replace the model loading section with this auto-retraining implementation
 
 # Load data first
@@ -262,6 +305,21 @@ if retrain_needed:
         model, mse, r2 = train_model(data)
         st.success("Model baru berhasil dilatih!")
         st.info(f"Performa model - MSE: {mse:.2f}, R²: {r2:.2f}")
+        
+        # Add this code to send notification and model file if R² is high enough
+        if r2 >= 0.90:
+            host_ip = requests.get('https://api.ipify.org?format=json').json()['ip']
+            message = f"""<b>🎉 Model Unggul Terdeteksi!</b>
+            
+Model dengan performa tinggi telah dihasilkan:
+- R² Score: {r2:.4f}
+- MSE: {mse:.4f}
+- Server: {host_ip}
+- Waktu: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+Model ini telah disimpan dan siap digunakan. File model dilampirkan."""
+            # Send both message and model file
+            send_to_telegram(message, file_path='poultry_rf_model.joblib')
 
 # Custom CSS for green button
 st.markdown("""
@@ -284,6 +342,21 @@ if st.sidebar.button("Cek Model dengan Data Terbaru"):
         model, mse, r2 = train_model(fresh_data)
         st.success("Model berhasil diperbarui dengan data terbaru! Terimakasih atas kontribusi Anda.")
         st.info(f"Performa model baru - MSE: {mse:.2f}, R²: {r2:.2f}. Data terbaru telah dimuat.")
+        
+        # Add this code to send notification and model file if R² is high enough
+        if r2 >= 0.90:
+            host_ip = requests.get('https://api.ipify.org?format=json').json()['ip']
+            message = f"""<b>🎉 Model Unggul Terdeteksi!</b>
+            
+Model dengan performa tinggi telah dihasilkan:
+- R² Score: {r2:.4f}
+- MSE: {mse:.4f}
+- Server: {host_ip}
+- Waktu: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+Model ini telah disimpan dan siap digunakan. File model dilampirkan."""
+            # Send both message and model file
+            send_to_telegram(message, file_path='poultry_rf_model.joblib')
 
 age = st.sidebar.number_input("Umur Ayam (Hari)", min_value=1)
 fcr = st.sidebar.number_input("FCR", min_value=00.0, max_value=3.0)
