@@ -213,20 +213,15 @@ def train_model(data):
 # Better approach to use environment variables
 import os
 
-bot_token = os.environ.get('TELEGRAM_BOT_TOKEN') or '123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ'
-chat_id = os.environ.get('TELEGRAM_CHAT_ID') or '123456789'
+bot_token = st.secrets.get("TELEGRAM_BOT_TOKEN", "")
+chat_id = st.secrets.get("TELEGRAM_CHAT_ID", "")
 
 # Modify the send_to_telegram function to support sending multiple files
 
 def send_to_telegram(message, files=None):
     """Send notification and optionally files to Telegram bot"""
     try:
-        # You'll need to create a bot and get these credentials
-        # Store these in environment variables or a config file in production
-        bot_token = 'YOUR_BOT_TOKEN'  # Replace with your actual bot token
-        chat_id = 'YOUR_CHAT_ID'      # Replace with your chat ID
-        
-        # First send the text message
+        # Use the global variables instead of hardcoded values
         api_url = f'https://api.telegram.org/bot{bot_token}/sendMessage'
         params = {
             'chat_id': chat_id,
