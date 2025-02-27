@@ -141,11 +141,11 @@ def load_data(url, verbose=False):
 def generate_sample_data():
     n_samples = 100
     X_train = np.random.rand(n_samples, 6)
-    X_train[:, 0] *= 42  # Age (1-42 days)
+    X_train[:, 0] *= 45  # Age (1-45 days)
     X_train[:, 1] *= 23000  # Total_Body_Weight (0-23000 kg)
     X_train[:, 2] = 1 + X_train[:, 2]  # FCR (1.0-2.0)
-    X_train[:, 3] *= 10000  # Live_Bird (0-10000 birds)
-    X_train[:, 4] *= 10000  # Ayam_Dipelihara (0-10000 birds)
+    X_train[:, 3] *= 30000  # Live_Bird (0-10000 birds)
+    X_train[:, 4] *= 30000  # Ayam_Dipelihara (0-30000 birds)
     X_train[:, 5] *= 100  # persen_Live_Bird (0-100%)
     
     # Calculate IP values
