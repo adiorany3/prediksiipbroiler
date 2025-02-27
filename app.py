@@ -512,7 +512,7 @@ if st.sidebar.button("Hitung Indeks Performans"):
         st.success(f"Berikut data IP di kandang Anda, berdasarkan perhitungan maka nilainya {actual_ip:.2f} ({interpretasi_aktual}), dan berdasarkan prediksi dari system kami nilainya {prediction:.2f} ({interpretasi_prediksi})")
 
 # Add Telegram bot controls with password protection
-with st.sidebar.expander("Pengaturan Bot"):
+with st.sidebar.expander("Pengaturan"):
     # Initialize session state for authentication if not already done
     if 'bot_authenticated' not in st.session_state:
         st.session_state.bot_authenticated = False
