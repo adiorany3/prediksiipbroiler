@@ -376,7 +376,7 @@ st.write("---")
 st.write("Keterangan:")
 st.write("1. IP (Indeks Performans) adalah nilai yang menggambarkan performa produksi broiler.")
 st.write("2. Masukkan data produksi broiler Anda pada sidebar, dan system juga akan memberikan interpretasi IP yang dihasilkan, sekaligus memberikan prediksi IP berdasarkan data yang Anda masukkan, saat Anda klik tombol [Hitung Indeks Performans].")
-st.write(f"Data prediksi akan semakin presisi jika Anda sering menggunakan system ini untuk menghitung IP Broiler | algoritma IP prediksi telah diupdate pada tanggal {datetime.date.today().strftime('%d %B %Y')}")
+st.write(f"Data prediksi akan semakin presisi jika Anda sering menggunakan system ini untuk menghitung IP Broiler ")
 
 # Footer
 st.markdown("---")
