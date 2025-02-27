@@ -291,10 +291,9 @@ ayam_dipelihara = st.sidebar.number_input("Jumlah Ayam Dipelihara (ekor)", min_v
 persen_live_bird = st.sidebar.number_input("Persentase Ayam Hidup (%)", min_value=50.0, max_value=100.0)
 total_body_weight = st.sidebar.number_input("Total Berat Badan Panen (kg)", min_value=0.0)
 
-# Add a separator in the sidebar
-st.sidebar.markdown("---")
 # Predict button
 if st.sidebar.button("Hitung Indeks Performans"):
+
     # Calculate Live_Bird
     live_bird = (persen_live_bird / 100) * ayam_dipelihara
     
