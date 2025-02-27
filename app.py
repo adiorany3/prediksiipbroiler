@@ -216,10 +216,52 @@ import os
 bot_token = st.secrets.get("TELEGRAM_BOT_TOKEN", "")
 chat_id = st.secrets.get("TELEGRAM_CHAT_ID", "")
 
-# Modify the send_to_telegram function to support sending multiple files
+# Function to toggle Telegram bot status
+def toggle_telegram_bot(enable=None):
+    """Toggle or set the Telegram bot status"""
+    status_file = 'telegram_bot_status.txt'
+    
+    # If enable is None, we're toggling the current status
+    if enable is None:
+        # Read current status
+        if os.path.exists(status_file):
+            with open(status_file, 'r') as f:
+                current_status = f.read().strip() == 'enabled'
+            # Toggle the status
+            new_status = not current_status
+        else:
+            # Default to disabled if no status file exists
+            new_status = False
+    else:
+        # Set status directly to the provided value
+        new_status = enable
+    
+    # Save the new status
+    with open(status_file, 'w') as f:
+        f.write('enabled' if new_status else 'disabled')
+    
+    return new_status
 
+# Get current Telegram bot status
+def get_telegram_bot_status():
+    """Get the current Telegram bot status (enabled/disabled)"""
+    status_file = 'telegram_bot_status.txt'
+    
+    if os.path.exists(status_file):
+        with open(status_file, 'r') as f:
+            return f.read().strip() == 'enabled'
+    else:
+        # Default to disabled if no status file exists
+        return False
+
+# Modify the send_to_telegram function to support sending multiple files
 def send_to_telegram(message, files=None):
     """Send notification and optionally files to Telegram bot"""
+    # Check if the Telegram bot is enabled
+    if not get_telegram_bot_status():
+        # Bot is disabled, do nothing
+        return None
+    
     try:
         # Use the global variables instead of hardcoded values
         api_url = f'https://api.telegram.org/bot{bot_token}/sendMessage'
@@ -338,6 +380,17 @@ div.stButton > button:first-child {
 
 # Input form
 st.sidebar.header("Masukkan Parameter Produksi Broiler")
+
+# Add Telegram bot controls (place this before other sidebar elements)
+with st.sidebar.expander("Pengaturan Telegram Bot"):
+    bot_status = get_telegram_bot_status()
+    st.write(f"Status Bot: {'Aktif' if bot_status else 'Nonaktif'}")
+    
+    if st.button("Aktifkan Bot" if not bot_status else "Nonaktifkan Bot"):
+        new_status = toggle_telegram_bot()
+        st.success(f"Bot sekarang {'Aktif' if new_status else 'Nonaktif'}")
+        st.experimental_rerun()  # Refresh the UI to reflect the change
+
 # Add the retrain button to the sidebar
 if st.sidebar.button("Cek Model dengan Data Terbaru"):
     with st.spinner("Sedang melatih model dengan data terbaru..."):
