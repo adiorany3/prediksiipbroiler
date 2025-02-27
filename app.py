@@ -432,6 +432,9 @@ ayam_dipelihara = st.sidebar.number_input("Jumlah Ayam Dipelihara (ekor)", min_v
 persen_live_bird = st.sidebar.number_input("Persentase Ayam Hidup (%)", min_value=50, max_value=100)
 total_body_weight = st.sidebar.number_input("Total Berat Badan Panen (kg)", min_value=0)
 
+# Predict button
+if st.sidebar.button("Hitung Indeks Performans"):
+
 # Replace the redundant controls with a simple status display
 with st.sidebar.expander("Status Synchronisasi"):
     bot_status = get_telegram_bot_status()
@@ -472,9 +475,6 @@ with st.sidebar.expander("Pengaturan Bot"):
         if st.button("Keluar", key="logout_button"):
             st.session_state.bot_authenticated = False
             st.rerun()
-
-# Predict button
-if st.sidebar.button("Hitung Indeks Performans"):
 
     # Calculate Live_Bird
     live_bird = (persen_live_bird / 100) * ayam_dipelihara
