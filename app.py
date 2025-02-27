@@ -285,7 +285,7 @@ if st.sidebar.button("Cek Model dengan Data Terbaru"):
         st.success("Model berhasil diperbarui dengan data terbaru! Terimakasih atas kontribusi Anda.")
         st.info(f"Performa model baru - MSE: {mse:.2f}, R²: {r2:.2f}. Data terbaru telah dimuat.")
 
-age = st.sidebar.number_input("Umur Ayam (Hari)", min_value=1)
+age = st.sidebar.number_input("Umur Ayam (Hari)", min_value=0)
 fcr = st.sidebar.number_input("FCR", min_value=0.0)
 ayam_dipelihara = st.sidebar.number_input("Jumlah Ayam Dipelihara (ekor)", min_value=0)
 persen_live_bird = st.sidebar.number_input("Persentase Ayam Hidup (%)", min_value=50.0, max_value=100.0)
