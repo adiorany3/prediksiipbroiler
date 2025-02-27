@@ -391,6 +391,41 @@ with st.sidebar.expander("Sync data"):
         st.success(f"Bot sekarang {'Aktif' if new_status else 'Nonaktif'}")
         st.rerun()  # Updated to use st.rerun() instead of st.experimental_rerun()
 
+# Add Telegram bot controls with password protection
+with st.sidebar.expander("Pengaturan Bot"):
+    # Initialize session state for authentication if not already done
+    if 'bot_authenticated' not in st.session_state:
+        st.session_state.bot_authenticated = False
+    
+    # Password verification section
+    if not st.session_state.bot_authenticated:
+        password = st.text_input("Masukkan password admin:", type="password")
+        
+        # Check password (in production, use hashed passwords)
+        correct_password = "AdmiNyA"  # Change this to your secure password
+        
+        if st.button("Verifikasi"):
+            if password == correct_password:
+                st.session_state.bot_authenticated = True
+                st.success("Verifikasi berhasil!")
+                st.rerun()
+            else:
+                st.error("Password salah!")
+    
+    # Only show bot controls if authenticated
+    if st.session_state.bot_authenticated:
+        bot_status = get_telegram_bot_status()
+        st.write(f"Status Bot: {'Aktif' if bot_status else 'Nonaktif'}")
+        
+        if st.button("Aktifkan Bot" if not bot_status else "Nonaktifkan Bot"):
+            new_status = toggle_telegram_bot()
+            st.success(f"Bot sekarang {'Aktif' if new_status else 'Nonaktif'}")
+            st.rerun()
+            
+        if st.button("Keluar"):
+            st.session_state.bot_authenticated = False
+            st.rerun()
+
 # Add the retrain button to the sidebar
 if st.sidebar.button("Cek Model dengan Data Terbaru"):
     with st.spinner("Sedang melatih model dengan data terbaru..."):
