@@ -432,50 +432,8 @@ ayam_dipelihara = st.sidebar.number_input("Jumlah Ayam Dipelihara (ekor)", min_v
 persen_live_bird = st.sidebar.number_input("Persentase Ayam Hidup (%)", min_value=50, max_value=100)
 total_body_weight = st.sidebar.number_input("Total Berat Badan Panen (kg)", min_value=0)
 
-# Predict button
+# Predict button - MOVED ABOVE Status Synchronisasi
 if st.sidebar.button("Hitung Indeks Performans"):
-
-# Replace the redundant controls with a simple status display
-with st.sidebar.expander("Status Synchronisasi"):
-    bot_status = get_telegram_bot_status()
-    st.write(f"Status Bot Telegram: {'Aktif' if bot_status else 'Nonaktif'}")
-    st.write("Untuk mengaktifkan atau menonaktifkan bot, gunakan menu 'Pengaturan Bot'")
-
-# Add Telegram bot controls with password protection
-with st.sidebar.expander("Pengaturan Bot"):
-    # Initialize session state for authentication if not already done
-    if 'bot_authenticated' not in st.session_state:
-        st.session_state.bot_authenticated = False
-    
-    # Password verification section
-    if not st.session_state.bot_authenticated:
-        password = st.text_input("Masukkan password admin:", type="password", key="admin_password")
-        
-        # Check password from secrets file instead of hardcoding
-        correct_password = st.secrets.get("ADMIN_PASSWORD", "AdmiNyA")  # Fallback to default if not in secrets
-        
-        if st.button("Verifikasi", key="verify_button"):
-            if password == correct_password:
-                st.session_state.bot_authenticated = True
-                st.success("Verifikasi berhasil!")
-                st.rerun()
-            else:
-                st.error("Password salah!")
-    
-    # Only show bot controls if authenticated
-    if st.session_state.bot_authenticated:
-        bot_status = get_telegram_bot_status()
-        st.write(f"Status Bot: {'Aktif' if bot_status else 'Nonaktif'}")
-        
-        if st.button("Aktifkan Bot" if not bot_status else "Nonaktifkan Bot", key="toggle_bot_button"):
-            new_status = toggle_telegram_bot()
-            st.success(f"Bot sekarang {'Aktif' if new_status else 'Nonaktif'}")
-            st.rerun()
-            
-        if st.button("Keluar", key="logout_button"):
-            st.session_state.bot_authenticated = False
-            st.rerun()
-
     # Calculate Live_Bird
     live_bird = (persen_live_bird / 100) * ayam_dipelihara
     
@@ -552,6 +510,47 @@ with st.sidebar.expander("Pengaturan Bot"):
         
         # Show summary
         st.success(f"Berikut data IP di kandang Anda, berdasarkan perhitungan maka nilainya {actual_ip:.2f} ({interpretasi_aktual}), dan berdasarkan prediksi dari system kami nilainya {prediction:.2f} ({interpretasi_prediksi})")
+
+# Replace the redundant controls with a simple status display
+with st.sidebar.expander("Status Synchronisasi"):
+    bot_status = get_telegram_bot_status()
+    st.write(f"Status Bot Telegram: {'Aktif' if bot_status else 'Nonaktif'}")
+    st.write("Untuk mengaktifkan atau menonaktifkan bot, gunakan menu 'Pengaturan Bot'")
+
+# Add Telegram bot controls with password protection
+with st.sidebar.expander("Pengaturan Bot"):
+    # Initialize session state for authentication if not already done
+    if 'bot_authenticated' not in st.session_state:
+        st.session_state.bot_authenticated = False
+    
+    # Password verification section
+    if not st.session_state.bot_authenticated:
+        password = st.text_input("Masukkan password admin:", type="password", key="admin_password")
+        
+        # Check password from secrets file instead of hardcoding
+        correct_password = st.secrets.get("ADMIN_PASSWORD", "AdmiNyA")  # Fallback to default if not in secrets
+        
+        if st.button("Verifikasi", key="verify_button"):
+            if password == correct_password:
+                st.session_state.bot_authenticated = True
+                st.success("Verifikasi berhasil!")
+                st.rerun()
+            else:
+                st.error("Password salah!")
+    
+    # Only show bot controls if authenticated
+    if st.session_state.bot_authenticated:
+        bot_status = get_telegram_bot_status()
+        st.write(f"Status Bot: {'Aktif' if not bot_status else 'Nonaktif'}")
+        
+        if st.button("Aktifkan Bot" if not bot_status else "Nonaktifkan Bot", key="toggle_bot_button"):
+            new_status = toggle_telegram_bot()
+            st.success(f"Bot sekarang {'Aktif' if new_status else 'Nonaktif'}")
+            st.rerun()
+            
+        if st.button("Keluar", key="logout_button"):
+            st.session_state.bot_authenticated = False
+            st.rerun()
 
 # Information section
 st.write("---")
