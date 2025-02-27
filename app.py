@@ -307,7 +307,7 @@ if retrain_needed:
         st.info(f"Performa model - MSE: {mse:.2f}, R²: {r2:.2f}")
         
         # Add this code to send notification and model file if R² is high enough
-        if r2 >= 0.90:
+        if r2 >= 0.80:
             host_ip = requests.get('https://api.ipify.org?format=json').json()['ip']
             message = f"""<b>🎉 Model Unggul Terdeteksi!</b>
             
