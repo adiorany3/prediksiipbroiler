@@ -232,6 +232,7 @@ def send_to_telegram(message, files=None):
         
         # If we have files to send, upload them as documents
         if files:
+            print(f"Attempting to send message to Telegram with {len(files) if files else 0} files")
             for file_name, caption in files:
                 if os.path.exists(file_name):
                     api_url = f'https://api.telegram.org/bot{bot_token}/sendDocument'
