@@ -511,12 +511,6 @@ if st.sidebar.button("Hitung Indeks Performans"):
         # Show summary
         st.success(f"Berikut data IP di kandang Anda, berdasarkan perhitungan maka nilainya {actual_ip:.2f} ({interpretasi_aktual}), dan berdasarkan prediksi dari system kami nilainya {prediction:.2f} ({interpretasi_prediksi})")
 
-# Replace the redundant controls with a simple status display
-with st.sidebar.expander("Status Synchronisasi"):
-    bot_status = get_telegram_bot_status()
-    st.write(f"Status Bot Telegram: {'Aktif' if bot_status else 'Nonaktif'}")
-    st.write("Untuk mengaktifkan atau menonaktifkan bot, gunakan menu 'Pengaturan Bot'")
-
 # Add Telegram bot controls with password protection
 with st.sidebar.expander("Pengaturan Bot"):
     # Initialize session state for authentication if not already done
@@ -541,7 +535,7 @@ with st.sidebar.expander("Pengaturan Bot"):
     # Only show bot controls if authenticated
     if st.session_state.bot_authenticated:
         bot_status = get_telegram_bot_status()
-        st.write(f"Status Bot: {'Aktif' if not bot_status else 'Nonaktif'}")
+        st.write(f"Status Bot: {'Aktif' if new_status else 'Nonaktif'}")
         
         if st.button("Aktifkan Bot" if not bot_status else "Nonaktifkan Bot", key="toggle_bot_button"):
             new_status = toggle_telegram_bot()
