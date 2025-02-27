@@ -382,13 +382,51 @@ st.write(f"Data prediksi akan semakin presisi jika Anda sering menggunakan syste
 st.markdown("---")
 current_year = datetime.datetime.now().year
 
-# Add IP detection
+# Add IP detection and visitor counting
 try:
     import requests
+    
+    # Function to log visitor and get count
+    def log_visitor(ip_address):
+        """Log visitor IP and return total unique visitor count"""
+        visitors_file = 'visitors.csv'
+        
+        try:
+            # Try to load existing visitor data
+            if os.path.exists(visitors_file):
+                visitors_df = pd.read_csv(visitors_file)
+            else:
+                # Create new dataframe if file doesn't exist
+                visitors_df = pd.DataFrame(columns=['ip', 'timestamp'])
+            
+            # Add new visitor if not already in today's logs
+            today = datetime.datetime.now().strftime('%Y-%m-%d')
+            
+            # Filter to see if this IP has visited today
+            today_visits = visitors_df[visitors_df['timestamp'].str.startswith(today)]
+            if ip_address not in today_visits['ip'].values:
+                # Add new row with current IP and timestamp
+                new_row = pd.DataFrame({
+                    'ip': [ip_address],
+                    'timestamp': [datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')]
+                })
+                visitors_df = pd.concat([visitors_df, new_row], ignore_index=True)
+                visitors_df.to_csv(visitors_file, index=False)
+            
+            # Count unique visitors
+            unique_visitors = len(visitors_df['ip'].unique())
+            return unique_visitors
+            
+        except Exception:
+            # If any error occurs, return 1 (at least this visitor)
+            return 1
+    
     response = requests.get('https://api.ipify.org?format=json', timeout=3)
     ip_address = response.json()['ip']
+    visitor_count = log_visitor(ip_address)
+    
     st.text(f"© {current_year} Developed by: Galuh Adi Insani with ❤️. All rights reserved.")
-    st.text(f"Visitor IP: {ip_address}")
+    st.text(f"Visitor IP: {ip_address} | Total Visitors: {visitor_count}")
 except Exception as e:
     st.text(f"© {current_year} Developed by: Galuh Adi Insani with ❤️. All rights reserved.")
     # Uncomment to show errors during debugging
