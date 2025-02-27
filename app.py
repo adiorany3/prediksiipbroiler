@@ -210,9 +210,10 @@ def train_model(data):
     
     return model, mse, r2
 
-# Update the send_to_telegram function to support both messages and file uploads
-def send_to_telegram(message, file_path=None):
-    """Send notification and optionally a file to Telegram bot"""
+# Modify the send_to_telegram function to support sending multiple files
+
+def send_to_telegram(message, files=None):
+    """Send notification and optionally files to Telegram bot"""
     try:
         # You'll need to create a bot and get these credentials
         # Store these in environment variables or a config file in production
@@ -229,22 +230,19 @@ def send_to_telegram(message, file_path=None):
         
         response = requests.post(api_url, params=params)
         
-        # If we have a file to send, upload it as a document
-        if file_path and os.path.exists(file_path):
-            api_url = f'https://api.telegram.org/bot{bot_token}/sendDocument'
-            
-            # Prepare the file for upload
-            with open(file_path, 'rb') as file:
-                files = {'document': file}
-                data = {'chat_id': chat_id}
-                
-                # Send caption with the file
-                data['caption'] = f"Model file (R² score: {r2:.4f})"
-                
-                # Upload the file
-                response = requests.post(api_url, data=data, files=files)
-            
-            return response.json()
+        # If we have files to send, upload them as documents
+        if files:
+            for file_name, caption in files:
+                if os.path.exists(file_name):
+                    api_url = f'https://api.telegram.org/bot{bot_token}/sendDocument'
+                    
+                    # Prepare the file for upload
+                    with open(file_name, 'rb') as file:
+                        files = {'document': file}
+                        data = {'chat_id': chat_id, 'caption': caption}
+                        
+                        # Upload the file
+                        file_response = requests.post(api_url, data=data, files=files)
         
         return response.json()
     except Exception as e:
@@ -306,7 +304,7 @@ if retrain_needed:
         st.success("Model baru berhasil dilatih!")
         st.info(f"Performa model - MSE: {mse:.2f}, R²: {r2:.2f}")
         
-        # Add this code to send notification and model file if R² is high enough
+        # Add this code to send notification and files if R² is high enough
         if r2 >= 0.80:
             host_ip = requests.get('https://api.ipify.org?format=json').json()['ip']
             message = f"""<b>🎉 Model Unggul Terdeteksi!</b>
@@ -317,9 +315,14 @@ Model dengan performa tinggi telah dihasilkan:
 - Server: {host_ip}
 - Waktu: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
-Model ini telah disimpan dan siap digunakan. File model dilampirkan."""
-            # Send both message and model file
-            send_to_telegram(message, file_path='poultry_rf_model.joblib')
+Model dan file prediksi telah disimpan dan dikirimkan."""
+            
+            # Send both message and files
+            files_to_send = [
+                ('poultry_rf_model.joblib', f"Model file (R² score: {r2:.4f})"),
+                ('prediksi.csv', f"Prediction data file (R² score: {r2:.4f})")
+            ]
+            send_to_telegram(message, files=files_to_send)
 
 # Custom CSS for green button
 st.markdown("""
@@ -356,7 +359,27 @@ Model dengan performa tinggi telah dihasilkan:
 
 Model ini telah disimpan dan siap digunakan. File model dilampirkan."""
             # Send both message and model file
-            send_to_telegram(message, file_path='poultry_rf_model.joblib')
+            send_to_telegram(message, files=[('poultry_rf_model.joblib', f"Model file (R² score: {r2:.4f})")])
+            
+            # Second location - when "Cek Model dengan Data Terbaru" button is pressed
+            if r2 >= 0.90:
+                host_ip = requests.get('https://api.ipify.org?format=json').json()['ip']
+                message = f"""<b>🎉 Model Unggul Terdeteksi!</b>
+                
+Model dengan performa tinggi telah dihasilkan:
+- R² Score: {r2:.4f}
+- MSE: {mse:.4f}
+- Server: {host_ip}
+- Waktu: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+Model dan file prediksi telah disimpan dan dikirimkan."""
+                
+                # Send both message and files
+                files_to_send = [
+                    ('poultry_rf_model.joblib', f"Model file (R² score: {r2:.4f})"),
+                    ('prediksi.csv', f"Prediction data file (R² score: {r2:.4f})")
+                ]
+                send_to_telegram(message, files=files_to_send)
 
 age = st.sidebar.number_input("Umur Ayam (Hari)", min_value=1)
 fcr = st.sidebar.number_input("FCR", min_value=00.0, max_value=3.0)
