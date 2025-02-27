@@ -381,7 +381,18 @@ st.write(f"Data prediksi akan semakin presisi jika Anda sering menggunakan syste
 # Footer
 st.markdown("---")
 current_year = datetime.datetime.now().year
-st.text(f"© {current_year} Developed by: Galuh Adi Insani with ❤️. All rights reserved.")
+
+# Add IP detection
+try:
+    import requests
+    response = requests.get('https://api.ipify.org?format=json', timeout=3)
+    ip_address = response.json()['ip']
+    st.text(f"© {current_year} Developed by: Galuh Adi Insani with ❤️. All rights reserved.")
+    st.text(f"Visitor IP: {ip_address}")
+except Exception as e:
+    st.text(f"© {current_year} Developed by: Galuh Adi Insani with ❤️. All rights reserved.")
+    # Uncomment to show errors during debugging
+    # st.text(f"Could not detect IP: {str(e)}")
 
 hide_st_style = """
             <style>
