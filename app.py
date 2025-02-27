@@ -276,7 +276,7 @@ div.stButton > button:first-child {
 # Input form
 st.sidebar.header("Masukkan Parameter Produksi Broiler")
 # Add the retrain button to the sidebar
-if st.sidebar.button("Retrain Model dengan Data Terbaru"):
+if st.sidebar.button("Training ulang Model dengan Data Terbaru"):
     with st.spinner("Sedang melatih model dengan data terbaru..."):
         # Force reload of data (bypass cache)
         st.cache_data.clear()
