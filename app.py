@@ -282,8 +282,8 @@ if st.sidebar.button("Retrain Model dengan Data Terbaru"):
         st.cache_data.clear()
         fresh_data = load_data(DATA_URL, verbose=False)
         model, mse, r2 = train_model(fresh_data)
-        st.success("Model berhasil diperbarui dengan data terbaru!")
-        st.info(f"Performa model baru - MSE: {mse:.2f}, R²: {r2:.2f}")
+        st.success("Model berhasil diperbarui dengan data terbaru! Terimakasih atas kontribusi Anda.")
+        st.info(f"Performa model baru - MSE: {mse:.2f}, R²: {r2:.2f}. Data terbaru telah dimuat.")
 
 age = st.sidebar.number_input("Umur Ayam (Hari)", min_value=0)
 fcr = st.sidebar.number_input("FCR", min_value=0.0)
