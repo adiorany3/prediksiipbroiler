@@ -535,12 +535,57 @@ with st.sidebar.expander("Pengaturan"):
     # Only show bot controls if authenticated
     if st.session_state.bot_authenticated:
         bot_status = get_telegram_bot_status()
-        st.write(f"Status Bot: {'Aktif' if bot_status else 'Nonaktif'}")  # Use bot_status instead of new_status
+        st.write(f"Status Bot: {'Aktif' if bot_status else 'Nonaktif'}")
         
         if st.button("Aktifkan Bot" if not bot_status else "Nonaktifkan Bot", key="toggle_bot_button"):
             new_status = toggle_telegram_bot()
             st.success(f"Bot sekarang {'Aktif' if new_status else 'Nonaktif'}")
             st.rerun()
+        
+        # Add threshold setting for high-performing model
+        st.subheader("Pengaturan Model")
+        
+        if 'r2_threshold' not in st.session_state:
+            st.session_state.r2_threshold = 0.90
+            
+        r2_threshold = st.slider(
+            "Ambang R² untuk notifikasi model unggul", 
+            min_value=0.80, 
+            max_value=0.99, 
+            value=st.session_state.r2_threshold,
+            step=0.01,
+            key="r2_threshold_slider"
+        )
+        st.session_state.r2_threshold = r2_threshold
+        
+        st.write(f"Model akan dianggap unggul jika R² ≥ {r2_threshold:.2f}")
+        
+        # Add checkbox to enable/disable auto-notification
+        if 'auto_notify' not in st.session_state:
+            st.session_state.auto_notify = True
+            
+        auto_notify = st.checkbox(
+            "Kirim notifikasi otomatis untuk model unggul", 
+            value=st.session_state.auto_notify,
+            key="auto_notify_checkbox"
+        )
+        st.session_state.auto_notify = auto_notify
+        
+        # Test notification button
+        if st.button("Uji Notifikasi", key="test_notification"):
+            message = f"""<b>🧪 Uji Notifikasi Bot</b>
+            
+Bot berhasil dikonfigurasi dan berjalan dengan baik.
+            
+- Waktu: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+- Ambang R²: {r2_threshold:.2f}
+- Auto-notifikasi: {'Aktif' if auto_notify else 'Nonaktif'}
+"""
+            send_result = send_to_telegram(message)
+            if send_result:
+                st.success("Notifikasi uji berhasil dikirim!")
+            else:
+                st.error("Gagal mengirim notifikasi uji. Periksa token dan chat ID.")
             
         if st.button("Keluar", key="logout_button"):
             st.session_state.bot_authenticated = False
