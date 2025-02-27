@@ -363,10 +363,10 @@ if st.sidebar.button("Hitung Indeks Performans"):
             new_data = new_data[existing_data.columns]
             combined_data = pd.concat([existing_data, new_data], ignore_index=True)
             combined_data.to_csv('prediksi.csv', index=False)
-            st.success("Data berhasil disimpan ke prediksi.csv")
+            st.success("Data akan dipertimbangkan menjadi update")
         except FileNotFoundError:
             new_data.to_csv('prediksi.csv', index=False)
-            st.success("File prediksi.csv berhasil dibuat")
+            st.success("Database berhasil diperbarui")
         
         # Show summary
         st.success(f"Berikut data IP di kandang Anda, berdasarkan perhitungan maka nilainya {actual_ip:.2f} ({interpretasi_aktual}), dan berdasarkan prediksi dari system kami nilainya {prediction:.2f} ({interpretasi_prediksi})")
