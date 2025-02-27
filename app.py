@@ -250,7 +250,7 @@ try:
             st.warning(f"Model membutuhkan {model.n_features_in_} fitur, tetapi kita memerlukan {expected_features} fitur. Model akan dilatih ulang.")
             retrain_needed = True
         else:
-            st.success("Model terbaru berhasil dimuat.")
+            st.success(f"Model terbaru berhasil dimuat pada tanggal {model_modified_date.strftime('%d %B %Y')}.")
             
 except (FileNotFoundError, ValueError) as e:
     st.warning(f"Tidak dapat memuat model: {str(e)}. Model akan dilatih ulang.")
