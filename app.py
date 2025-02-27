@@ -535,7 +535,7 @@ with st.sidebar.expander("Pengaturan Bot"):
     # Only show bot controls if authenticated
     if st.session_state.bot_authenticated:
         bot_status = get_telegram_bot_status()
-        st.write(f"Status Bot: {'Aktif' if new_status else 'Nonaktif'}")
+        st.write(f"Status Bot: {'Aktif' if bot_status else 'Nonaktif'}")  # Use bot_status instead of new_status
         
         if st.button("Aktifkan Bot" if not bot_status else "Nonaktifkan Bot", key="toggle_bot_button"):
             new_status = toggle_telegram_bot()
