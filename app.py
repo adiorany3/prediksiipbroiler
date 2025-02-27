@@ -401,8 +401,8 @@ with st.sidebar.expander("Pengaturan Bot"):
     if not st.session_state.bot_authenticated:
         password = st.text_input("Masukkan password admin:", type="password")
         
-        # Check password (in production, use hashed passwords)
-        correct_password = "AdmiNyA"  # Change this to your secure password
+        # Check password from secrets file instead of hardcoding
+        correct_password = st.secrets.get("ADMIN_PASSWORD", "AdmiNyA")  # Fallback to default if not in secrets
         
         if st.button("Verifikasi"):
             if password == correct_password:
