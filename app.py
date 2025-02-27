@@ -382,3 +382,12 @@ st.write(f"Data prediksi akan semakin presisi jika Anda sering menggunakan syste
 st.markdown("---")
 current_year = datetime.datetime.now().year
 st.text(f"© {current_year} Developed by: Galuh Adi Insani with ❤️. All rights reserved.")
+
+hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_html=True)
