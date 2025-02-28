@@ -792,7 +792,7 @@ if os.path.exists('prediksi.csv') and st.session_state.get('show_graphs', True):
                 st.metric("Rata-rata IP Prediksi", f"{mean_pred:.2f}")
             with col2:
                 st.metric("Median IP Aktual", f"{median_actual:.2f}")
-                st.metric("Error Rata-rata", f"{abs(mean_actual - mean_pred)::.2f}")
+                st.metric("Error Rata-rata", f"{abs(mean_actual - mean_pred):.2f}")
         
         with tab4:
             st.subheader("Heatmap Korelasi Parameter")
