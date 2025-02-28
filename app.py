@@ -769,7 +769,7 @@ Bot berhasil dikonfigurasi dan berjalan dengan baik.
                     
                     if not duplicate_check_columns:
                         st.error("Tidak ada kolom yang sesuai untuk pemeriksaan duplikasi.")
-                        return
+                        st.stop()  # Use st.stop() instead of return
                         
                     # Remove duplicates based on available key fields
                     st.info(f"Menghapus duplikasi berdasarkan kolom: {', '.join(duplicate_check_columns)}")
