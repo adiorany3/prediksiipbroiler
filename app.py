@@ -617,15 +617,23 @@ if st.sidebar.button("Hitung Indeks Performans"):
                 duplicate_check_columns = ['Age', 'Total_Body_Weight', 'FCR', 'Live_Bird', 
                                           'Ayam_Dipelihara', 'persen_Live_Bird', 'IP_actual']
                 
-                # Keep only the first occurrence of each unique combination
-                combined_data = combined_data.drop_duplicates(
-                    subset=duplicate_check_columns, 
-                    keep='first'
-                )
+                # Only use columns that actually exist in the DataFrame
+                available_duplicate_columns = [col for col in duplicate_check_columns if col in combined_data.columns]
+
+                if available_duplicate_columns:
+                    # Keep only the first occurrence of each unique combination
+                    combined_data = combined_data.drop_duplicates(
+                        subset=available_duplicate_columns, 
+                        keep='first'
+                    )
+                    # Save deduplicated data
+                    combined_data.to_csv('prediksi.csv', index=False)
+                    st.success("Data akan dipertimbangkan menjadi update (duplikasi dihapus)")
+                else:
+                    # If no suitable columns are found for deduplication
+                    combined_data.to_csv('prediksi.csv', index=False)
+                    st.warning("Penghapusan duplikasi tidak dilakukan: kolom yang diperlukan tidak ditemukan")
                 
-                # Save deduplicated data
-                combined_data.to_csv('prediksi.csv', index=False)
-                st.success("Data akan dipertimbangkan menjadi update (duplikasi dihapus)")
             else:
                 st.warning(f"Data tidak ditambahkan ke database karena kualitas model saat ini (R² = {st.session_state.get('model_r2', 0.0):.2f}) kurang dari 0.90")
                 
