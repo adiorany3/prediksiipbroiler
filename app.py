@@ -746,10 +746,33 @@ Bot berhasil dikonfigurasi dan berjalan dengan baik.
                     df = pd.read_csv('prediksi.csv')
                     original_count = len(df)
                     
-                    # Remove duplicates based on key fields
-                    duplicate_check_columns = ['Age', 'Total_Body_Weight', 'FCR', 'Live_Bird', 
-                                             'Ayam_Dipelihara', 'persen_Live_Bird', 'IP_actual']
+                    # Map possible column names to standardized names
+                    column_mapping = {
+                        'actual_ip': 'IP_actual',
+                        'prediction': 'IP',
+                        'FCR': 'FCR_actual'
+                    }
                     
+                    # Rename columns if needed
+                    for old_col, new_col in column_mapping.items():
+                        if old_col in df.columns and new_col not in df.columns:
+                            df.rename(columns={old_col: new_col}, inplace=True)
+                    
+                    # Identify columns that exist in the dataframe for deduplication
+                    duplicate_check_columns = []
+                    all_possible_columns = ['Age', 'Total_Body_Weight', 'FCR', 'FCR_actual', 'Live_Bird', 
+                                          'Ayam_Dipelihara', 'persen_Live_Bird', 'IP_actual']
+                    
+                    for col in all_possible_columns:
+                        if col in df.columns:
+                            duplicate_check_columns.append(col)
+                    
+                    if not duplicate_check_columns:
+                        st.error("Tidak ada kolom yang sesuai untuk pemeriksaan duplikasi.")
+                        return
+                        
+                    # Remove duplicates based on available key fields
+                    st.info(f"Menghapus duplikasi berdasarkan kolom: {', '.join(duplicate_check_columns)}")
                     df = df.drop_duplicates(subset=duplicate_check_columns, keep='first')
                     new_count = len(df)
                     
@@ -764,6 +787,7 @@ Bot berhasil dikonfigurasi dan berjalan dengan baik.
                     st.warning("File prediksi.csv tidak ditemukan.")
             except Exception as e:
                 st.error(f"Error saat membersihkan data: {str(e)}")
+                st.info("Detail struktur file: " + ", ".join(df.columns) if 'df' in locals() and hasattr(df, 'columns') else "File tidak dapat dibaca")
 
 # Information section
 st.write("---")
