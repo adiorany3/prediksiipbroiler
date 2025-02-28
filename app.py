@@ -576,12 +576,13 @@ if st.sidebar.button("Hitung Indeks Performans"):
             'IP_actual', 'IP', 'Culling', 'ADG_actual', 'Feed', 'FCR_actual'
         ])
         
-        # Save data to CSV - only if model quality is good enough
+        # Save data to CSV - always save, no quality check
         try:
-            # Check if model R² is high enough to add this data point
-            model_quality_sufficient = st.session_state.get('model_r2', 0.0) >= 0.90
+            # Remove this line that checks model quality
+            # model_quality_sufficient = st.session_state.get('model_r2', 0.0) >= 0.90
             
-            if model_quality_sufficient:
+            # Always proceed to save data
+            if os.path.exists('prediksi.csv'):
                 existing_data = pd.read_csv('prediksi.csv')
                 
                 # Rename columns in existing data if needed
@@ -616,22 +617,21 @@ if st.sidebar.button("Hitung Indeks Performans"):
                     )
                     # Save deduplicated data
                     combined_data.to_csv('prediksi.csv', index=False)
-                    st.success("Data akan dipertimbangkan menjadi update dan duplikasi dihapus)")
+                    st.success("Data berhasil disimpan dan duplikasi dihapus")
                 else:
                     # If no suitable columns are found for deduplication
                     combined_data.to_csv('prediksi.csv', index=False)
                     st.warning("Penghapusan duplikasi tidak dilakukan: kolom yang diperlukan tidak ditemukan")
-                
+            
+            # For first-time use, always create file regardless of model quality
             else:
-                st.warning(f"Data tidak ditambahkan ke database karena kualitas model saat ini (R² = {st.session_state.get('model_r2', 0.0):.2f}) kurang dari 0.90")
+                new_data.to_csv('prediksi.csv', index=False)
+                st.success("Database berhasil dibuat dan diperbarui")
                 
         except FileNotFoundError:
-            # For first-time use, create file if model is good enough
-            if st.session_state.get('model_r2', 0.0) >= 0.90:
-                new_data.to_csv('prediksi.csv', index=False)
-                st.success("Database berhasil diperbarui")
-            else:
-                st.warning(f"Data tidak ditambahkan ke database karena kualitas model saat ini (R² = {st.session_state.get('model_r2', 0.0):.2f}) kurang dari 0.90")
+            # Always save data for first-time use
+            new_data.to_csv('prediksi.csv', index=False)
+            st.success("Database berhasil diperbarui")
         
         # Show summary
         st.success(f"Berikut data IP di kandang Anda, berdasarkan perhitungan maka nilainya {actual_ip:.2f} ({interpretasi_aktual}), dan berdasarkan prediksi dari system kami nilainya {prediction:.2f} ({interpretasi_prediksi})")
