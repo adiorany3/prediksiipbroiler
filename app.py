@@ -42,6 +42,82 @@ def interpret_ip(ip_value):
     else:
         return "Perlu pengecekan data"
 
+# Add this function after the interpret_ip function (around line 30)
+def generate_ip_recommendations(ip_value, fcr, mortality_rate, age):
+    """Generate personalized recommendations based on IP and farm parameters"""
+    # Base recommendations dictionary organized by IP interpretation category
+    recommendations = {
+        "Kurang": [
+            "Tingkatkan manajemen ventilasi dan kualitas udara dalam kandang",
+            "Evaluasi kembali program pemberian pakan dan nutrisi",
+            "Periksa kepadatan kandang, mungkin terlalu tinggi",
+            "Evaluasi program pencahayaan dalam kandang",
+            "Pastikan air minum cukup bersih dan selalu tersedia"
+        ],
+        "Cukup": [
+            "Fokus pada perbaikan FCR dengan manajemen pakan yang lebih baik",
+            "Optimalkan program vaksinasi dan biosecurity",
+            "Pertimbangkan kontrol suhu kandang yang lebih baik",
+            "Periksa kembali kualitas DOC (Day Old Chick)",
+            "Evaluasi jadwal pemberian pakan"
+        ],
+        "Baik": [
+            "Pertahankan praktek manajemen yang sudah baik",
+            "Optimalkan formula pakan untuk efisiensi lebih baik",
+            "Pertimbangkan perbaikan kecil pada kualitas air",
+            "Monitor pertumbuhan harian lebih ketat",
+            "Evaluasi potensi peningkatan kepadatan kandang"
+        ],
+        "Sangat Baik": [
+            "Dokumentasikan praktek manajemen untuk replikasi di periode berikutnya",
+            "Fokus pada detail kecil untuk perbaikan minor",
+            "Pertimbangkan ujicoba suplemen nutrisi untuk hasil optimal",
+            "Review program kesehatan untuk menekan angka kematian",
+            "Evaluasi potensi perpanjangan masa panen untuk bobot optimal"
+        ],
+        "Istimewa": [
+            "Dokumentasikan semua praktek untuk standardisasi",
+            "Bagikan praktek terbaik dengan farm lain",
+            "Pertimbangkan pengembangan kapasitas produksi",
+            "Evaluasi aspek ekonomi untuk optimasi profit",
+            "Pertahankan sistem manajemen yang sudah sangat baik"
+        ]
+    }
+    
+    # Get interpretation of IP
+    interpretation = interpret_ip(ip_value)
+    
+    # Select base recommendations
+    base_recs = recommendations.get(interpretation, ["Perlu evaluasi menyeluruh pada manajemen farm"])
+    
+    # Add specific recommendations based on metrics
+    specific_recs = []
+    
+    # FCR-specific recommendations
+    if fcr > 2.0:
+        specific_recs.append("FCR tinggi (>2.0): Evaluasi kualitas pakan dan program pemberian pakan")
+    elif fcr > 1.7:
+        specific_recs.append("FCR cukup tinggi: Pertimbangkan penyesuaian formulasi pakan")
+    elif fcr < 1.4:
+        specific_recs.append("FCR sangat baik: Pertahankan manajemen pakan yang sudah optimal")
+        
+    # Mortality-specific recommendations (100 - persen_live_bird = mortality rate)
+    mortality_rate = 100 - mortality_rate  # Convert live bird % to mortality %
+    if mortality_rate > 5:
+        specific_recs.append(f"Angka kematian tinggi ({mortality_rate:.1f}%): Evaluasi program kesehatan dan biosecurity")
+    elif mortality_rate > 3:
+        specific_recs.append(f"Angka kematian perlu perhatian ({mortality_rate:.1f}%): Periksa kondisi kandang dan manajemen")
+    else:
+        specific_recs.append(f"Angka kematian rendah ({mortality_rate:.1f}%): Pertahankan program kesehatan yang baik")
+        
+    # Age-specific recommendations
+    if ip_value < 350 and age > 35:
+        specific_recs.append("Umur panen yang lebih panjang tidak menghasilkan IP optimal: Evaluasi waktu panen")
+        
+    # Combine and return recommendations
+    all_recommendations = base_recs + specific_recs
+    return all_recommendations
+
 # Cache data loading for better performance
 @st.cache_data
 def load_data(url, verbose=False):
@@ -515,6 +591,24 @@ if st.sidebar.button("Hitung Indeks Performans"):
         
         # Show summary
         st.success(f"Berikut data IP di kandang Anda, berdasarkan perhitungan maka nilainya {actual_ip:.2f} ({interpretasi_aktual}), dan berdasarkan prediksi dari system kami nilainya {prediction:.2f} ({interpretasi_prediksi})")
+
+        # Generate and display AI recommendations
+        st.subheader("Rekomendasi untuk Peningkatan Performa")
+        recommendations = generate_ip_recommendations(
+            ip_value=actual_ip, 
+            fcr=fcr, 
+            mortality_rate=persen_live_bird,
+            age=age
+        )
+        
+        for i, rec in enumerate(recommendations[:5], 1):  # Limit to 5 recommendations
+            st.write(f"{i}. {rec}")
+        
+        with st.expander("Lihat semua rekomendasi"):
+            for i, rec in enumerate(recommendations, 1):
+                st.write(f"{i}. {rec}")
+                
+        st.info("Rekomendasi ini dibuat berdasarkan analisis data performa dan praktik terbaik dalam budidaya broiler. Selalu konsultasikan dengan ahli peternakan untuk penerapan spesifik.")
 
 # Add Telegram bot controls with password protection
 with st.sidebar.expander("Pengaturan"):
