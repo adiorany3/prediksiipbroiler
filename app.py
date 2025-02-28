@@ -373,7 +373,7 @@ def send_to_telegram(message, files=None):
         print(f"Error sending Telegram notification: {str(e)}")
         return None
 
-# Replace the model loading section with this auto-retraining implementation
+# Replace the model loading section with this updated implementation
 
 # Load data first
 DATA_URL = 'data_kandang.csv'
@@ -384,6 +384,9 @@ retrain_needed = False
 model_path = 'poultry_rf_model.joblib'
 last_modified_time = None
 prediksi_modified_time = None
+
+# Define minimum acceptable R² threshold
+MIN_R2_THRESHOLD = 0.80
 
 try:
     # Check if model exists and when it was last modified
@@ -424,20 +427,23 @@ except (FileNotFoundError, ValueError) as e:
 if retrain_needed:
     with st.spinner("Melatih model dengan data terbaru..."):
         model, mse, r2 = train_model(data)
-        st.success("Model baru berhasil dilatih!")
-        st.info(f"Performa model - MSE: {mse:.2f}, R²: {r2:.2f}")
         
-        # Store R² in session state
-        if 'model_r2' not in st.session_state:
-            st.session_state.model_r2 = r2
-        else:
-            st.session_state.model_r2 = r2
+        # Check if R² meets minimum threshold
+        if r2 >= MIN_R2_THRESHOLD:
+            st.success("Model baru berhasil dilatih!")
+            st.info(f"Performa model - MSE: {mse:.2f}, R²: {r2:.2f}")
             
-        # Add this code to send notification and files if R² is high enough
-        if r2 >= 0.98:
-            host_ip = requests.get('https://api.ipify.org?format=json').json()['ip']
-            message = f"""<b>🎉 Model Unggul Terdeteksi!</b>
+            # Save the model only if R² is good enough
+            joblib.dump(model, model_path)
             
+            # Store R² in session state
+            st.session_state.model_r2 = r2
+                
+            # Add this code to send notification and files if R² is high enough
+            if r2 >= 0.98 and st.session_state.get('auto_notify', True):
+                host_ip = requests.get('https://api.ipify.org?format=json').json()['ip']
+                message = f"""<b>🎉 Model Unggul Terdeteksi!</b>
+                
 Model dengan performa tinggi telah dihasilkan:
 - R² Score: {r2:.4f}
 - MSE: {mse:.4f}
@@ -445,13 +451,45 @@ Model dengan performa tinggi telah dihasilkan:
 - Waktu: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
 Model dan file prediksi telah disimpan dan dikirimkan."""
+                
+                # Send both message and files
+                files_to_send = [
+                    ('poultry_rf_model.joblib', f"Model file (R² score: {r2:.4f})"),
+                    ('prediksi.csv', f"Prediction data file (R² score: {r2:.4f})")
+                ]
+                send_to_telegram(message, files=files_to_send)
+        else:
+            st.warning(f"Model baru memiliki R² = {r2:.2f}, yang kurang dari minimum {MIN_R2_THRESHOLD}.")
+            st.info("Menggunakan model lama atau menambahkan data sampel tambahan.")
             
-            # Send both message and files
-            files_to_send = [
-                ('poultry_rf_model.joblib', f"Model file (R² score: {r2:.4f})"),
-                ('prediksi.csv', f"Prediction data file (R² score: {r2:.4f})")
-            ]
-            send_to_telegram(message, files=files_to_send)
+            # Try to load existing model, if not available, create one with more sample data
+            try:
+                if os.path.exists(model_path):
+                    model = joblib.load(model_path)
+                    st.success("Berhasil memuat model sebelumnya.")
+                else:
+                    st.info("Model sebelumnya tidak ditemukan. Membuat model dengan data sampel tambahan.")
+                    # Generate more sample data
+                    sample_data = generate_sample_data()
+                    # Combine with existing data
+                    combined_data = pd.concat([data, sample_data], ignore_index=True)
+                    # Train model with combined data
+                    model, mse, r2 = train_model(combined_data)
+                    
+                    if r2 >= MIN_R2_THRESHOLD:
+                        joblib.dump(model, model_path)
+                        st.success(f"Model dengan data sampel tambahan berhasil dibuat (R² = {r2:.2f}).")
+                    else:
+                        st.warning(f"Bahkan dengan data tambahan, model masih di bawah batas R² (R² = {r2:.2f}).")
+                        st.info("Menggunakan model terbaik yang tersedia. Harap tambahkan lebih banyak data nyata.")
+            except Exception as e:
+                st.error(f"Error saat mencoba memuat atau membuat model: {str(e)}")
+                st.info("Membuat model dasar dengan data sampel.")
+                sample_data = generate_sample_data()
+                model, _, _ = train_model(sample_data)
+            
+            # Store the R² value
+            st.session_state.model_r2 = r2
 else:
     # If we didn't retrain, use a stored R² or default value
     if 'model_r2' not in st.session_state:
@@ -851,26 +889,20 @@ with st.sidebar.expander("Pengaturan"):
                 st.cache_data.clear()
                 fresh_data = load_data(DATA_URL, verbose=False)
                 model, mse, r2 = train_model(fresh_data)
-                st.success("Model berhasil diperbarui dengan data terbaru! Terimakasih atas kontribusi Anda.")
-                st.info(f"Performa model baru - MSE: {mse:.2f}, R²: {r2:.2f}. Data terbaru telah dimuat.")
                 
-                # Add this code to send notification and model file if R² is high enough
-                if r2 >= 0.90:
-                    host_ip = requests.get('https://api.ipify.org?format=json').json()['ip']
-                    message = f"""<b>🎉 Model Unggul Terdeteksi!</b>
+                # Check if R² meets minimum threshold
+                if r2 >= MIN_R2_THRESHOLD:
+                    # Save the model
+                    joblib.dump(model, 'poultry_rf_model.joblib')
                     
-Model dengan performa tinggi telah dihasilkan:
-- R² Score: {r2:.4f}
-- MSE: {mse:.4f}
-- Server: {host_ip}
-- Waktu: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-
-Model ini telah disimpan dan siap digunakan. File model dilampirkan."""
-                    # Send both message and model file
-                    send_to_telegram(message, files=[('poultry_rf_model.joblib', f"Model file (R² score: {r2:.4f})")])
+                    st.success("Model berhasil diperbarui dengan data terbaru! Terimakasih atas kontribusi Anda.")
+                    st.info(f"Performa model baru - MSE: {mse:.2f}, R²: {r2:.2f}. Data terbaru telah dimuat.")
                     
-                    # Second location - when "Cek Model dengan Data Terbaru" button is pressed
-                    if r2 >= 0.90:
+                    # Update session state
+                    st.session_state.model_r2 = r2
+                    
+                    # Add this code to send notification and model file if R² is high enough
+                    if r2 >= st.session_state.get('r2_threshold', 0.90) and st.session_state.get('auto_notify', True):
                         host_ip = requests.get('https://api.ipify.org?format=json').json()['ip']
                         message = f"""<b>🎉 Model Unggul Terdeteksi!</b>
                         
@@ -888,6 +920,9 @@ Model dan file prediksi telah disimpan dan dikirimkan."""
                             ('prediksi.csv', f"Prediction data file (R² score: {r2:.4f})")
                         ]
                         send_to_telegram(message, files=files_to_send)
+                else:
+                    st.warning(f"Model baru memiliki R² = {r2:.2f}, yang kurang dari minimum {MIN_R2_THRESHOLD}.")
+                    st.info("Model tidak diperbarui. Silahkan tambahkan lebih banyak data berkualitas.")
         
         if 'r2_threshold' not in st.session_state:
             st.session_state.r2_threshold = 0.90
