@@ -621,7 +621,7 @@ if st.sidebar.button("Hitung Indeks Performans"):
 # Add visualization section
 if os.path.exists('prediksi.csv') and st.session_state.get('show_graphs', True):  # Default to showing if not set
     st.write("---")
-    st.subheader("Grafik Performa Produksi")
+    st.subheader("Grafik Performa Produksi vs Model")
     
     # Load historical data
     hist_data = pd.read_csv('prediksi.csv')
@@ -946,19 +946,6 @@ Bot berhasil dikonfigurasi dan berjalan dengan baik.
                     df = pd.read_csv('prediksi.csv')
                     original_count = len(df)
                     
-                    # Create a temporary backup of the original file
-                    original_file = 'prediksi_original.csv'
-                    df.to_csv(original_file, index=False)
-                    
-                    # Send the original file to Telegram first
-                    message = f"""<b>🗄️ File Data Sebelum Pembersihan</b>
-                    
-File data original sebelum pembersihan:
-- Jumlah baris: {original_count}
-- Waktu: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-"""
-                    send_to_telegram(message, files=[(original_file, "Data sebelum pembersihan duplikasi")])
-                    
                     # Map possible column names to standardized names
                     column_mapping = {
                         'actual_ip': 'IP_actual',
@@ -982,7 +969,7 @@ File data original sebelum pembersihan:
                     
                     if not duplicate_check_columns:
                         st.error("Tidak ada kolom yang sesuai untuk pemeriksaan duplikasi.")
-                        st.stop()
+                        st.stop()  # Use st.stop() instead of return
                         
                     # Remove duplicates based on available key fields
                     st.info(f"Menghapus duplikasi berdasarkan kolom: {', '.join(duplicate_check_columns)}")
@@ -992,26 +979,10 @@ File data original sebelum pembersihan:
                     # Save cleaned data
                     df.to_csv('prediksi.csv', index=False)
                     
-                    # Send the cleaned file to Telegram
-                    message = f"""<b>🗄️ File Data Setelah Pembersihan</b>
-                    
-File data setelah pembersihan duplikasi:
-- Jumlah baris awal: {original_count}
-- Jumlah baris setelah pembersihan: {new_count}
-- Duplikasi dihapus: {original_count - new_count}
-- Waktu: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-"""
-                    send_to_telegram(message, files=[('prediksi.csv', "Data setelah pembersihan duplikasi")])
-                    
                     if original_count > new_count:
                         st.success(f"Pembersihan berhasil! {original_count - new_count} duplikasi telah dihapus.")
                     else:
                         st.info("Tidak ditemukan duplikasi data.")
-                        
-                    # Remove temporary file after sending
-                    if os.path.exists(original_file):
-                        os.remove(original_file)
-                        
                 else:
                     st.warning("File prediksi.csv tidak ditemukan.")
             except Exception as e:
@@ -1031,7 +1002,7 @@ File data setelah pembersihan duplikasi:
             value=st.session_state.show_graphs,
             help="Aktifkan/nonaktifkan tampilan grafik analisis data untuk pengguna"
         )
-        st.session_state.show_graphs = show_graphs
+        st.session_state.show_graphs = Disembunyikan
 
         # Show current status
         st.write(f"Status Grafik: {'Ditampilkan' if show_graphs else 'Disembunyikan'}")
