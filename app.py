@@ -10,6 +10,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 from PIL import Image
 import requests
+import seaborn as sns  # Add this import for the heatmap
 
 # Page configuration
 st.set_page_config(page_title="Hitung IP Broiler dengan mudah", page_icon="🐔")
