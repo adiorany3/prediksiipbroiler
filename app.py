@@ -657,6 +657,144 @@ if st.sidebar.button("Hitung Indeks Performans"):
                 
         st.info("Rekomendasi ini dibuat berdasarkan analisis data performa dan praktik terbaik dalam budidaya broiler. Selalu konsultasikan dengan ahli peternakan untuk penerapan spesifik.")
 
+# Add this code after the recommendations section (around line 673)
+
+# Add visualization section
+if os.path.exists('prediksi.csv'):
+    st.write("---")
+    st.subheader("Grafik Performa Produksi")
+    
+    # Load historical data
+    hist_data = pd.read_csv('prediksi.csv')
+    
+    # Ensure column names are standardized
+    column_mapping = {
+        'actual_ip': 'IP_actual',
+        'prediction': 'IP',
+        'FCR': 'FCR_actual'
+    }
+    
+    # Rename columns if needed
+    for old_col, new_col in column_mapping.items():
+        if old_col in hist_data.columns and new_col not in hist_data.columns:
+            hist_data.rename(columns={old_col: new_col}, inplace=True)
+    
+    # Check if we have enough data to plot
+    if len(hist_data) >= 3 and 'IP_actual' in hist_data.columns and 'IP' in hist_data.columns:
+        # Create tabs for different visualizations
+        tab1, tab2, tab3 = st.tabs(["Perbandingan IP Aktual vs Prediksi", "Tren Performa", "Distribusi IP"])
+        
+        with tab1:
+            # Scatter plot of Actual vs Predicted IP
+            fig, ax = plt.subplots(figsize=(10, 6))
+            ax.scatter(hist_data['IP_actual'], hist_data['IP'], alpha=0.7)
+            
+            # Add perfect prediction line
+            min_val = min(hist_data['IP_actual'].min(), hist_data['IP'].min())
+            max_val = max(hist_data['IP_actual'].max(), hist_data['IP'].max())
+            ax.plot([min_val, max_val], [min_val, max_val], 'r--', alpha=0.7)
+            
+            ax.set_xlabel('IP Aktual')
+            ax.set_ylabel('IP Prediksi')
+            ax.set_title('Perbandingan IP Aktual vs Prediksi')
+            ax.grid(True, alpha=0.3)
+            
+            # Annotate with R² value
+            if 'model_r2' in st.session_state:
+                r2 = st.session_state.model_r2
+                ax.annotate(f'Model R² = {r2:.2f}', 
+                          xy=(0.05, 0.95), xycoords='axes fraction',
+                          bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="gray", alpha=0.8))
+            
+            st.pyplot(fig)
+            st.caption("Grafik perbandingan nilai IP aktual dengan nilai prediksi. Semakin dekat titik-titik dengan garis merah putus-putus, semakin akurat model.")
+        
+        with tab2:
+            # Check if Date column exists
+            date_col = 'Date' if 'Date' in hist_data.columns else None
+            
+            if date_col and not hist_data[date_col].isna().all():
+                # Convert to datetime if needed
+                hist_data[date_col] = pd.to_datetime(hist_data[date_col])
+                hist_data = hist_data.sort_values(by=date_col)
+                
+                # Time series plot
+                fig, ax = plt.subplots(figsize=(10, 6))
+                ax.plot(hist_data[date_col], hist_data['IP_actual'], 'o-', label='IP Aktual')
+                ax.plot(hist_data[date_col], hist_data['IP'], 's--', label='IP Prediksi')
+                ax.set_xlabel('Tanggal')
+                ax.set_ylabel('Indeks Performans (IP)')
+                ax.set_title('Tren IP Seiring Waktu')
+                ax.grid(True, alpha=0.3)
+                ax.legend()
+                plt.xticks(rotation=45)
+                plt.tight_layout()
+                st.pyplot(fig)
+            else:
+                # Use record number as x-axis
+                fig, ax = plt.subplots(figsize=(10, 6))
+                x_values = range(len(hist_data))
+                ax.plot(x_values, hist_data['IP_actual'], 'o-', label='IP Aktual')
+                ax.plot(x_values, hist_data['IP'], 's--', label='IP Prediksi')
+                ax.set_xlabel('Urutan Record')
+                ax.set_ylabel('Indeks Performans (IP)')
+                ax.set_title('Tren IP Seiring Waktu')
+                ax.grid(True, alpha=0.3)
+                ax.legend()
+                st.pyplot(fig)
+            
+            st.caption("Grafik menunjukkan perubahan nilai IP aktual dan prediksi seiring waktu.")
+            
+            # Add FCR trend if available
+            if 'FCR_actual' in hist_data.columns:
+                st.subheader("Tren FCR Seiring Waktu")
+                fig, ax = plt.subplots(figsize=(10, 6))
+                if date_col and not hist_data[date_col].isna().all():
+                    ax.plot(hist_data[date_col], hist_data['FCR_actual'], 'o-', color='green')
+                    ax.set_xlabel('Tanggal')
+                else:
+                    ax.plot(range(len(hist_data)), hist_data['FCR_actual'], 'o-', color='green')
+                    ax.set_xlabel('Urutan Record')
+                ax.set_ylabel('Feed Conversion Ratio (FCR)')
+                ax.set_title('Tren FCR')
+                ax.grid(True, alpha=0.3)
+                plt.xticks(rotation=45)
+                plt.tight_layout()
+                st.pyplot(fig)
+                st.caption("Tren FCR seiring waktu. Nilai FCR yang lebih rendah menunjukkan efisiensi pakan yang lebih baik.")
+        
+        with tab3:
+            # Distribution plot
+            fig, ax = plt.subplots(figsize=(10, 6))
+            
+            # Use transparency to show overlap
+            ax.hist(hist_data['IP_actual'], alpha=0.6, bins=10, label='IP Aktual')
+            ax.hist(hist_data['IP'], alpha=0.6, bins=10, label='IP Prediksi')
+            
+            ax.set_xlabel('Indeks Performans (IP)')
+            ax.set_ylabel('Frekuensi')
+            ax.set_title('Distribusi Nilai IP')
+            ax.grid(True, alpha=0.3)
+            ax.legend()
+            st.pyplot(fig)
+            st.caption("Distribusi nilai IP aktual dan prediksi. Grafik ini menunjukkan seberapa sering nilai IP tertentu muncul.")
+            
+            # Calculate stats
+            mean_actual = hist_data['IP_actual'].mean()
+            mean_pred = hist_data['IP'].mean()
+            median_actual = hist_data['IP_actual'].median()
+            
+            # Display summary statistics
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Rata-rata IP Aktual", f"{mean_actual:.2f}")
+                st.metric("Rata-rata IP Prediksi", f"{mean_pred:.2f}")
+            with col2:
+                st.metric("Median IP Aktual", f"{median_actual:.2f}")
+                st.metric("Error Rata-rata", f"{abs(mean_actual - mean_pred):.2f}")
+    else:
+        st.info("Belum cukup data untuk menampilkan grafik perbandingan. Minimal dibutuhkan 3 record dengan nilai IP Aktual dan Prediksi.")
+
 # Add Telegram bot controls with password protection
 with st.sidebar.expander("Pengaturan"):
     # Initialize session state for authentication if not already done
