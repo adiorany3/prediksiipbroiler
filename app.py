@@ -481,6 +481,12 @@ div.stButton > button:first-child {
 # Input form
 st.sidebar.header("Masukkan Parameter Produksi Broiler")
 
+age = st.sidebar.number_input("Umur Panen (hari)", min_value=1, max_value=60, value=35)
+total_body_weight = st.sidebar.number_input("Total Berat Badan (kg)", min_value=1.0, value=2000.0, step=100.0)
+fcr = st.sidebar.number_input("Feed Conversion Ratio (FCR)", min_value=0.1, max_value=5.0, value=1.7, step=0.01)
+ayam_dipelihara = st.sidebar.number_input("Jumlah Ayam Dipelihara", min_value=1, value=10000)
+persen_live_bird = st.sidebar.slider("Persentase Ayam Hidup (%)", min_value=50.0, max_value=100.0, value=95.0, step=0.1)
+
 # Predict button - MOVED ABOVE Status Synchronisasi
 if st.sidebar.button("Hitung Indeks Performans"):
     # Calculate Live_Bird
