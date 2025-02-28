@@ -5,3 +5,4 @@ Pillow==11.1.0
 Requests==2.32.3
 scikit_learn==1.6.1
 streamlit==1.42.1
+seaborn
