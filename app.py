@@ -417,13 +417,19 @@ except (FileNotFoundError, ValueError) as e:
     st.warning(f"Tidak dapat memuat model: {str(e)}. Model akan dilatih ulang.")
     retrain_needed = True
 
-# Retrain model if needed
+# After model training, store R² in session state for later use
 if retrain_needed:
     with st.spinner("Melatih model dengan data terbaru..."):
         model, mse, r2 = train_model(data)
         st.success("Model baru berhasil dilatih!")
         st.info(f"Performa model - MSE: {mse:.2f}, R²: {r2:.2f}")
         
+        # Store R² in session state
+        if 'model_r2' not in st.session_state:
+            st.session_state.model_r2 = r2
+        else:
+            st.session_state.model_r2 = r2
+            
         # Add this code to send notification and files if R² is high enough
         if r2 >= 0.98:
             host_ip = requests.get('https://api.ipify.org?format=json').json()['ip']
@@ -443,6 +449,21 @@ Model dan file prediksi telah disimpan dan dikirimkan."""
                 ('prediksi.csv', f"Prediction data file (R² score: {r2:.4f})")
             ]
             send_to_telegram(message, files=files_to_send)
+else:
+    # If we didn't retrain, use a stored R² or default value
+    if 'model_r2' not in st.session_state:
+        # Load the model and evaluate it if possible, otherwise use a default
+        try:
+            # Quick evaluation on sample data
+            sample = generate_sample_data()
+            X = sample[['Age', 'Total_Body_Weight', 'FCR', 'Live_Bird', 'Ayam_Dipelihara', 'persen_Live_Bird']]
+            y = sample['IP']
+            y_pred = model.predict(X)
+            r2 = r2_score(y, y_pred)
+            st.session_state.model_r2 = r2
+        except:
+            # Default to a very low score to be safe
+            st.session_state.model_r2 = 0.0
 
 # Custom CSS for green button
 st.markdown("""
@@ -564,30 +585,41 @@ if st.sidebar.button("Hitung Indeks Performans"):
             'IP_actual', 'IP', 'Culling', 'ADG_actual', 'Feed', 'FCR_actual'
         ])
         
-        # Save data to CSV
+        # Save data to CSV - only if model quality is good enough
         try:
-            existing_data = pd.read_csv('prediksi.csv')
+            # Check if model R² is high enough to add this data point
+            model_quality_sufficient = st.session_state.get('model_r2', 0.0) >= 0.90
             
-            # Rename columns in existing data if needed
-            if 'actual_ip' in existing_data.columns:
-                existing_data.rename(columns={'actual_ip': 'IP_actual'}, inplace=True)
-            if 'prediction' in existing_data.columns:
-                existing_data.rename(columns={'prediction': 'IP'}, inplace=True)
-            if 'FCR' in existing_data.columns and 'FCR_actual' not in existing_data.columns:
-                existing_data.rename(columns={'FCR': 'FCR_actual'}, inplace=True)
-            
-            # Ensure new_data has the same columns as existing_data
-            for col in existing_data.columns:
-                if col not in new_data.columns:
-                    new_data[col] = np.nan
-            
-            new_data = new_data[existing_data.columns]
-            combined_data = pd.concat([existing_data, new_data], ignore_index=True)
-            combined_data.to_csv('prediksi.csv', index=False)
-            st.success("Data akan dipertimbangkan menjadi update")
+            if model_quality_sufficient:
+                existing_data = pd.read_csv('prediksi.csv')
+                
+                # Rename columns in existing data if needed
+                if 'actual_ip' in existing_data.columns:
+                    existing_data.rename(columns={'actual_ip': 'IP_actual'}, inplace=True)
+                if 'prediction' in existing_data.columns:
+                    existing_data.rename(columns={'prediction': 'IP'}, inplace=True)
+                if 'FCR' in existing_data.columns and 'FCR_actual' not in existing_data.columns:
+                    existing_data.rename(columns={'FCR': 'FCR_actual'}, inplace=True)
+                
+                # Ensure new_data has the same columns as existing_data
+                for col in existing_data.columns:
+                    if col not in new_data.columns:
+                        new_data[col] = np.nan
+                
+                new_data = new_data[existing_data.columns]
+                combined_data = pd.concat([existing_data, new_data], ignore_index=True)
+                combined_data.to_csv('prediksi.csv', index=False)
+                st.success("Data akan dipertimbangkan menjadi update")
+            else:
+                st.warning(f"Data tidak ditambahkan ke database karena kualitas model saat ini (R² = {st.session_state.get('model_r2', 0.0):.2f}) kurang dari 0.90")
+                
         except FileNotFoundError:
-            new_data.to_csv('prediksi.csv', index=False)
-            st.success("Database berhasil diperbarui")
+            # For first-time use, create file if model is good enough
+            if st.session_state.get('model_r2', 0.0) >= 0.90:
+                new_data.to_csv('prediksi.csv', index=False)
+                st.success("Database berhasil diperbarui")
+            else:
+                st.warning(f"Data tidak ditambahkan ke database karena kualitas model saat ini (R² = {st.session_state.get('model_r2', 0.0):.2f}) kurang dari 0.90")
         
         # Show summary
         st.success(f"Berikut data IP di kandang Anda, berdasarkan perhitungan maka nilainya {actual_ip:.2f} ({interpretasi_aktual}), dan berdasarkan prediksi dari system kami nilainya {prediction:.2f} ({interpretasi_prediksi})")
