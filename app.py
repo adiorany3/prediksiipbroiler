@@ -585,15 +585,15 @@ if st.sidebar.button("Hitung Indeks Performans"):
                     st.warning("Penghapusan duplikasi tidak dilakukan: kolom yang diperlukan tidak ditemukan")
                 
             else:
-                st.warning(f"Data tidak ditambahkan ke database karena kualitas model saat ini (R² = {st.session_state.get('model_r2', 0.0):.2f}) kurang dari 0.80")
+                st.warning(f"Data tidak ditambahkan ke database karena kualitas model saat ini (R² = {st.session_state.get('model_r2', 0.0):.2f}) kurang dari 0.90")
                 
         except FileNotFoundError:
             # For first-time use, create file if model is good enough
-            if st.session_state.get('model_r2', 0.0) >= 0.80:
+            if st.session_state.get('model_r2', 0.0) >= 0.90:
                 new_data.to_csv('prediksi.csv', index=False)
                 st.success("Database berhasil diperbarui")
             else:
-                st.warning(f"Data tidak ditambahkan ke database karena kualitas model saat ini (R² = {st.session_state.get('model_r2', 0.0):.2f}) kurang dari 0.80")
+                st.warning(f"Data tidak ditambahkan ke database karena kualitas model saat ini (R² = {st.session_state.get('model_r2', 0.0):.2f}) kurang dari 0.90")
         
         # Show summary
         st.success(f"Berikut data IP di kandang Anda, berdasarkan perhitungan maka nilainya {actual_ip:.2f} ({interpretasi_aktual}), dan berdasarkan prediksi dari system kami nilainya {prediction:.2f} ({interpretasi_prediksi})")
