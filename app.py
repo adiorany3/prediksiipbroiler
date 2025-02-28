@@ -481,62 +481,6 @@ div.stButton > button:first-child {
 # Input form
 st.sidebar.header("Masukkan Parameter Produksi Broiler")
 
-# Add the retrain button to the sidebar
-if st.sidebar.button("Cek Model dengan Data Terbaru"):
-    with st.spinner("Sedang melatih model dengan data terbaru..."):
-        # Force reload of data (bypass cache)
-        st.cache_data.clear()
-        fresh_data = load_data(DATA_URL, verbose=False)
-        model, mse, r2 = train_model(fresh_data)
-        st.success("Model berhasil diperbarui dengan data terbaru! Terimakasih atas kontribusi Anda.")
-        st.info(f"Performa model baru - MSE: {mse:.2f}, R²: {r2:.2f}. Data terbaru telah dimuat.")
-        
-        # Add this code to send notification and model file if R² is high enough
-        if r2 >= 0.90:
-            host_ip = requests.get('https://api.ipify.org?format=json').json()['ip']
-            message = f"""<b>🎉 Model Unggul Terdeteksi!</b>
-            
-Model dengan performa tinggi telah dihasilkan:
-- R² Score: {r2:.4f}
-- MSE: {mse:.4f}
-- Server: {host_ip}
-- Waktu: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-
-Model ini telah disimpan dan siap digunakan. File model dilampirkan."""
-            # Send both message and model file
-            send_to_telegram(message, files=[('poultry_rf_model.joblib', f"Model file (R² score: {r2:.4f})")])
-            
-            # Second location - when "Cek Model dengan Data Terbaru" button is pressed
-            if r2 >= 0.90:
-                host_ip = requests.get('https://api.ipify.org?format=json').json()['ip']
-                message = f"""<b>🎉 Model Unggul Terdeteksi!</b>
-                
-Model dengan performa tinggi telah dihasilkan:
-- R² Score: {r2:.4f}
-- MSE: {mse:.4f}
-- Server: {host_ip}
-- Waktu: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-
-Model dan file prediksi telah disimpan dan dikirimkan."""
-                
-                # Send both message and files
-                files_to_send = [
-                    ('poultry_rf_model.joblib', f"Model file (R² score: {r2:.4f})"),
-                    ('prediksi.csv', f"Prediction data file (R² score: {r2:.4f})")
-                ]
-                send_to_telegram(message, files=files_to_send)
-
-age = st.sidebar.number_input("Umur Ayam (Hari)", min_value=1, max_value=45, 
-                             help="Masukkan umur ayam antara 1-45 hari (periode pemeliharaan broiler standar)")
-fcr = st.sidebar.number_input("FCR", min_value=0.0, max_value=3.0, 
-                             help="Feed Conversion Ratio: Rasio pakan terhadap pertambahan bobot. Nilai normal antara 1.0-3.0, semakin rendah semakin baik")
-ayam_dipelihara = st.sidebar.number_input("Jumlah Ayam Dipelihara (ekor)", min_value=0,
-                                         help="Jumlah total ayam yang dipelihara sejak awal")
-persen_live_bird = st.sidebar.number_input("Persentase Ayam Hidup (%)", min_value=50, max_value=100,
-                                          help="Persentase ayam yang bertahan hidup hingga panen (50-100%)")
-total_body_weight = st.sidebar.number_input("Total Berat Badan Panen (kg)", min_value=0,
-                                           help="Berat total seluruh ayam yang dipanen dalam kilogram")
-
 # Predict button - MOVED ABOVE Status Synchronisasi
 if st.sidebar.button("Hitung Indeks Performans"):
     # Calculate Live_Bird
@@ -893,6 +837,51 @@ with st.sidebar.expander("Pengaturan"):
         
         # Add threshold setting for high-performing model
         st.subheader("Pengaturan Model")
+        
+        # Add the retrain button here within "Pengaturan"
+        if st.button("Cek Model dengan Data Terbaru", key="retrain_model_button"):
+            with st.spinner("Sedang melatih model dengan data terbaru..."):
+                # Force reload of data (bypass cache)
+                st.cache_data.clear()
+                fresh_data = load_data(DATA_URL, verbose=False)
+                model, mse, r2 = train_model(fresh_data)
+                st.success("Model berhasil diperbarui dengan data terbaru! Terimakasih atas kontribusi Anda.")
+                st.info(f"Performa model baru - MSE: {mse:.2f}, R²: {r2:.2f}. Data terbaru telah dimuat.")
+                
+                # Add this code to send notification and model file if R² is high enough
+                if r2 >= 0.90:
+                    host_ip = requests.get('https://api.ipify.org?format=json').json()['ip']
+                    message = f"""<b>🎉 Model Unggul Terdeteksi!</b>
+                    
+Model dengan performa tinggi telah dihasilkan:
+- R² Score: {r2:.4f}
+- MSE: {mse:.4f}
+- Server: {host_ip}
+- Waktu: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+Model ini telah disimpan dan siap digunakan. File model dilampirkan."""
+                    # Send both message and model file
+                    send_to_telegram(message, files=[('poultry_rf_model.joblib', f"Model file (R² score: {r2:.4f})")])
+                    
+                    # Second location - when "Cek Model dengan Data Terbaru" button is pressed
+                    if r2 >= 0.90:
+                        host_ip = requests.get('https://api.ipify.org?format=json').json()['ip']
+                        message = f"""<b>🎉 Model Unggul Terdeteksi!</b>
+                        
+Model dengan performa tinggi telah dihasilkan:
+- R² Score: {r2:.4f}
+- MSE: {mse:.4f}
+- Server: {host_ip}
+- Waktu: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+Model dan file prediksi telah disimpan dan dikirimkan."""
+                        
+                        # Send both message and files
+                        files_to_send = [
+                            ('poultry_rf_model.joblib', f"Model file (R² score: {r2:.4f})"),
+                            ('prediksi.csv', f"Prediction data file (R² score: {r2:.4f})")
+                        ]
+                        send_to_telegram(message, files=files_to_send)
         
         if 'r2_threshold' not in st.session_state:
             st.session_state.r2_threshold = 0.90
