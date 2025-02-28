@@ -578,7 +578,7 @@ if st.sidebar.button("Hitung Indeks Performans"):
                     )
                     # Save deduplicated data
                     combined_data.to_csv('prediksi.csv', index=False)
-                    st.success("Data akan dipertimbangkan menjadi update (duplikasi dihapus)")
+                    st.success("Data akan dipertimbangkan menjadi update dan duplikasi dihapus)")
                 else:
                     # If no suitable columns are found for deduplication
                     combined_data.to_csv('prediksi.csv', index=False)
