@@ -409,15 +409,26 @@ try:
         
     # Try loading the model if no retraining is needed
     if not retrain_needed:
-        model = joblib.load(model_path)
-        expected_features = len(['Age', 'Total_Body_Weight', 'FCR', 'Live_Bird', 'Ayam_Dipelihara', 'persen_Live_Bird'])
-        
-        # Check feature compatibility
-        if hasattr(model, 'n_features_in_') and model.n_features_in_ != expected_features:
-            st.warning(f"Model membutuhkan {model.n_features_in_} fitur, tetapi kita memerlukan {expected_features} fitur. Model akan dilatih ulang.")
+        try:
+            model = joblib.load(model_path)
+            expected_features = len(['Age', 'Total_Body_Weight', 'FCR', 'Live_Bird', 'Ayam_Dipelihara', 'persen_Live_Bird'])
+            
+            # Check feature compatibility
+            if hasattr(model, 'n_features_in_') and model.n_features_in_ != expected_features:
+                st.warning(f"Model membutuhkan {model.n_features_in_} fitur, tetapi kita memerlukan {expected_features} fitur. Model akan dilatih ulang.")
+                retrain_needed = True
+            else:
+                st.success(f"Model terbaru berhasil dimuat pada tanggal {model_modified_date.strftime('%d %B %Y')}.")
+        except EOFError:
+            st.warning("File model rusak atau kosong. Model akan dilatih ulang.")
             retrain_needed = True
-        else:
-            st.success(f"Model terbaru berhasil dimuat pada tanggal {model_modified_date.strftime('%d %B %Y')}.")
+            
+            # Delete the corrupted model file
+            try:
+                os.remove(model_path)
+                st.info("File model yang rusak telah dihapus.")
+            except:
+                pass
             
 except (FileNotFoundError, ValueError) as e:
     st.warning(f"Tidak dapat memuat model: {str(e)}. Model akan dilatih ulang.")
