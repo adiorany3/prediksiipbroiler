@@ -661,7 +661,7 @@ if st.sidebar.button("Hitung Indeks Performans"):
 # Add this code after the recommendations section (around line 673)
 
 # Add visualization section
-if os.path.exists('prediksi.csv'):
+if os.path.exists('prediksi.csv') and st.session_state.get('show_graphs', True):  # Default to showing if not set
     st.write("---")
     st.subheader("Grafik Performa Produksi")
     
@@ -792,7 +792,7 @@ if os.path.exists('prediksi.csv'):
                 st.metric("Rata-rata IP Prediksi", f"{mean_pred:.2f}")
             with col2:
                 st.metric("Median IP Aktual", f"{median_actual:.2f}")
-                st.metric("Error Rata-rata", f"{abs(mean_actual - mean_pred):.2f}")
+                st.metric("Error Rata-rata", f"{abs(mean_actual - mean_pred)::.2f}")
         
         with tab4:
             st.subheader("Heatmap Korelasi Parameter")
