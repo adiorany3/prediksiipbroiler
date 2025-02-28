@@ -682,7 +682,7 @@ if os.path.exists('prediksi.csv'):
     # Check if we have enough data to plot
     if len(hist_data) >= 3 and 'IP_actual' in hist_data.columns and 'IP' in hist_data.columns:
         # Create tabs for different visualizations
-        tab1, tab2, tab3 = st.tabs(["Perbandingan IP Aktual vs Prediksi", "Tren Performa", "Distribusi IP"])
+        tab1, tab2, tab3, tab4 = st.tabs(["Perbandingan IP Aktual vs Prediksi", "Tren Performa", "Distribusi IP", "Korelasi Parameter"])
         
         with tab1:
             # Scatter plot of Actual vs Predicted IP
@@ -792,6 +792,62 @@ if os.path.exists('prediksi.csv'):
             with col2:
                 st.metric("Median IP Aktual", f"{median_actual:.2f}")
                 st.metric("Error Rata-rata", f"{abs(mean_actual - mean_pred):.2f}")
+        
+        with tab4:
+            st.subheader("Heatmap Korelasi Parameter")
+            
+            # Select relevant numerical columns for correlation
+            numerical_cols = ['Age', 'Total_Body_Weight', 'FCR_actual', 'Live_Bird', 
+                              'Ayam_Dipelihara', 'persen_Live_Bird', 'IP_actual', 'IP']
+            
+            # Only use columns that actually exist in the dataframe
+            available_cols = [col for col in numerical_cols if col in hist_data.columns]
+            
+            if len(available_cols) >= 3:  # Need at least 3 parameters for meaningful correlation
+                # Calculate correlations
+                corr = hist_data[available_cols].corr()
+                
+                # Create heatmap
+                fig, ax = plt.subplots(figsize=(10, 8))
+                mask = np.triu(np.ones_like(corr, dtype=bool))  # Create mask for upper triangle
+                
+                # Create heatmap with seaborn
+                sns.heatmap(corr, mask=mask, annot=True, fmt=".2f", cmap="coolwarm",
+                           linewidths=0.5, ax=ax, cbar_kws={"shrink": .8})
+                
+                plt.title('Korelasi Antar Parameter Produksi')
+                plt.tight_layout()
+                st.pyplot(fig)
+                
+                # Explain the heatmap
+                st.caption("""
+                **Interpretasi Heatmap:**
+                - Nilai mendekati 1.0 (merah tua) menunjukkan korelasi positif kuat
+                - Nilai mendekati -1.0 (biru tua) menunjukkan korelasi negatif kuat
+                - Nilai mendekati 0 (putih) menunjukkan sedikit atau tidak ada korelasi
+                
+                Contoh interpretasi:
+                - Korelasi negatif antara FCR dan IP menunjukkan bahwa semakin rendah FCR (semakin efisien), semakin tinggi nilai IP
+                - Korelasi positif antara persen_Live_Bird dan IP menunjukkan bahwa tingkat kelangsungan hidup yang lebih tinggi menghasilkan IP yang lebih baik
+                """)
+                
+                # Show strongest correlations with IP_actual
+                if 'IP_actual' in available_cols:
+                    st.subheader("Faktor yang Paling Mempengaruhi IP")
+                    ip_corr = corr['IP_actual'].drop('IP_actual').sort_values(ascending=False)
+                    
+                    # Create a bar chart of correlations with IP_actual
+                    fig, ax = plt.subplots(figsize=(10, 5))
+                    ip_corr.plot(kind='barh', ax=ax)
+                    ax.set_xlabel('Koefisien Korelasi')
+                    ax.set_title('Korelasi Parameter dengan IP Aktual')
+                    ax.axvline(x=0, color='black', linestyle='-', alpha=0.3)
+                    ax.grid(axis='x', alpha=0.3)
+                    st.pyplot(fig)
+                    
+                    st.write("Grafik di atas menunjukkan parameter mana yang paling berpengaruh terhadap nilai IP.")
+            else:
+                st.info("Tidak cukup parameter numerik untuk membuat heatmap korelasi.")
     else:
         st.info("Belum cukup data untuk menampilkan grafik perbandingan. Minimal dibutuhkan 3 record dengan nilai IP Aktual dan Prediksi.")
 
