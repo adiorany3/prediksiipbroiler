@@ -619,7 +619,7 @@ if st.sidebar.button("Hitung Indeks Performans"):
 # Add this code after the recommendations section (around line 673)
 
 # Add visualization section
-if os.path.exists('prediksi.csv') and st.session_state.get('show_graphs', True):  # Default to showing if not set
+if os.path.exists('prediksi.csv') and st.session_state.get('show_graphs', False):  # Default to showing if not set
     st.write("---")
     st.subheader("Grafik Performa Produksi vs Model")
     
