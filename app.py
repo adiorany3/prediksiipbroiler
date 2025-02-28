@@ -608,8 +608,21 @@ if st.sidebar.button("Hitung Indeks Performans"):
                 
                 new_data = new_data[existing_data.columns]
                 combined_data = pd.concat([existing_data, new_data], ignore_index=True)
+                
+                # Remove duplicates based on key operational fields
+                # We consider entries duplicate if all these key parameters match
+                duplicate_check_columns = ['Age', 'Total_Body_Weight', 'FCR', 'Live_Bird', 
+                                          'Ayam_Dipelihara', 'persen_Live_Bird', 'IP_actual']
+                
+                # Keep only the first occurrence of each unique combination
+                combined_data = combined_data.drop_duplicates(
+                    subset=duplicate_check_columns, 
+                    keep='first'
+                )
+                
+                # Save deduplicated data
                 combined_data.to_csv('prediksi.csv', index=False)
-                st.success("Data akan dipertimbangkan menjadi update")
+                st.success("Data akan dipertimbangkan menjadi update (duplikasi dihapus)")
             else:
                 st.warning(f"Data tidak ditambahkan ke database karena kualitas model saat ini (R² = {st.session_state.get('model_r2', 0.0):.2f}) kurang dari 0.90")
                 
@@ -721,6 +734,36 @@ Bot berhasil dikonfigurasi dan berjalan dengan baik.
         if st.button("Keluar", key="logout_button"):
             st.session_state.bot_authenticated = False
             st.rerun()
+        
+        # Add data management section
+        st.subheader("Manajemen Data")
+        
+        # Add button to clean prediksi.csv file
+        if st.button("Bersihkan Duplikasi Data", key="clean_data"):
+            try:
+                if os.path.exists('prediksi.csv'):
+                    # Read the file
+                    df = pd.read_csv('prediksi.csv')
+                    original_count = len(df)
+                    
+                    # Remove duplicates based on key fields
+                    duplicate_check_columns = ['Age', 'Total_Body_Weight', 'FCR', 'Live_Bird', 
+                                             'Ayam_Dipelihara', 'persen_Live_Bird', 'IP_actual']
+                    
+                    df = df.drop_duplicates(subset=duplicate_check_columns, keep='first')
+                    new_count = len(df)
+                    
+                    # Save cleaned data
+                    df.to_csv('prediksi.csv', index=False)
+                    
+                    if original_count > new_count:
+                        st.success(f"Pembersihan berhasil! {original_count - new_count} duplikasi telah dihapus.")
+                    else:
+                        st.info("Tidak ditemukan duplikasi data.")
+                else:
+                    st.warning("File prediksi.csv tidak ditemukan.")
+            except Exception as e:
+                st.error(f"Error saat membersihkan data: {str(e)}")
 
 # Information section
 st.write("---")
