@@ -52,14 +52,16 @@ def generate_ip_recommendations(ip_value, fcr, mortality_rate, age):
             "Evaluasi kembali program pemberian pakan dan nutrisi",
             "Periksa kepadatan kandang, mungkin terlalu tinggi",
             "Evaluasi program pencahayaan dalam kandang",
-            "Pastikan air minum cukup bersih dan selalu tersedia"
+            "Pastikan air minum cukup bersih dan selalu tersedia",
+            "[Cek Penyakit](https://deteksiayam.streamlit.app/) - Periksa kemungkinan masalah kesehatan pada ayam Anda"
         ],
         "Cukup": [
             "Fokus pada perbaikan FCR dengan manajemen pakan yang lebih baik",
             "Optimalkan program vaksinasi dan biosecurity",
             "Pertimbangkan kontrol suhu kandang yang lebih baik",
             "Periksa kembali kualitas DOC (Day Old Chick)",
-            "Evaluasi jadwal pemberian pakan"
+            "Evaluasi jadwal pemberian pakan",
+            "[Cek Penyakit](https://deteksiayam.streamlit.app/) - Periksa apakah ada gejala penyakit yang mempengaruhi performa"
         ],
         "Baik": [
             "Pertahankan praktek manajemen yang sudah baik",
