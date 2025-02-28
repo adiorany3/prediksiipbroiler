@@ -1002,7 +1002,7 @@ Bot berhasil dikonfigurasi dan berjalan dengan baik.
             value=st.session_state.show_graphs,
             help="Aktifkan/nonaktifkan tampilan grafik analisis data untuk pengguna"
         )
-        st.session_state.show_graphs = 'Disembunyikan'
+        st.session_state.show_graphs = show_graphs
 
         # Show current status
         st.write(f"Status Grafik: {'Ditampilkan' if show_graphs else 'Disembunyikan'}")
