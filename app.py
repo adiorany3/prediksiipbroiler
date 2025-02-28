@@ -985,6 +985,24 @@ Bot berhasil dikonfigurasi dan berjalan dengan baik.
             except Exception as e:
                 st.error(f"Error saat membersihkan data: {str(e)}")
                 st.info("Detail struktur file: " + ", ".join(df.columns) if 'df' in locals() and hasattr(df, 'columns') else "File tidak dapat dibaca")
+        
+        # Add visualization controls
+        st.subheader("Pengaturan Tampilan")
+
+        # Initialize session state for graph visibility if not already set
+        if 'show_graphs' not in st.session_state:
+            st.session_state.show_graphs = True  # Default to showing graphs
+
+        # Add toggle for graph visibility
+        show_graphs = st.checkbox(
+            "Tampilkan Grafik Performa Produksi", 
+            value=st.session_state.show_graphs,
+            help="Aktifkan/nonaktifkan tampilan grafik analisis data untuk pengguna"
+        )
+        st.session_state.show_graphs = show_graphs
+
+        # Show current status
+        st.write(f"Status Grafik: {'Ditampilkan' if show_graphs else 'Disembunyikan'}")
 
 # Information section
 st.write("---")
