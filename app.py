@@ -426,11 +426,16 @@ Model dan file prediksi telah disimpan dan dikirimkan."""
                 ]
                 send_to_telegram(message, files=files_to_send)
 
-age = st.sidebar.number_input("Umur Ayam (Hari)", min_value=1, max_value=45)
-fcr = st.sidebar.number_input("FCR", min_value=00.0, max_value=3.0)
-ayam_dipelihara = st.sidebar.number_input("Jumlah Ayam Dipelihara (ekor)", min_value=0)
-persen_live_bird = st.sidebar.number_input("Persentase Ayam Hidup (%)", min_value=50, max_value=100)
-total_body_weight = st.sidebar.number_input("Total Berat Badan Panen (kg)", min_value=0)
+age = st.sidebar.number_input("Umur Ayam (Hari)", min_value=1, max_value=45, 
+                             help="Masukkan umur ayam antara 1-45 hari (periode pemeliharaan broiler standar)")
+fcr = st.sidebar.number_input("FCR", min_value=0.0, max_value=3.0, 
+                             help="Feed Conversion Ratio: Rasio pakan terhadap pertambahan bobot. Nilai normal antara 1.0-3.0, semakin rendah semakin baik")
+ayam_dipelihara = st.sidebar.number_input("Jumlah Ayam Dipelihara (ekor)", min_value=0,
+                                         help="Jumlah total ayam yang dipelihara sejak awal")
+persen_live_bird = st.sidebar.number_input("Persentase Ayam Hidup (%)", min_value=50, max_value=100,
+                                          help="Persentase ayam yang bertahan hidup hingga panen (50-100%)")
+total_body_weight = st.sidebar.number_input("Total Berat Badan Panen (kg)", min_value=0,
+                                           help="Berat total seluruh ayam yang dipanen dalam kilogram")
 
 # Predict button - MOVED ABOVE Status Synchronisasi
 if st.sidebar.button("Hitung Indeks Performans"):
