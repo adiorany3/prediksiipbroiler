@@ -589,7 +589,7 @@ if st.sidebar.button("Hitung Indeks Performans"):
                 
         except FileNotFoundError:
             # For first-time use, create file if model is good enough
-            if st.session_state.get('model_r2', 0.0) >= 0.90:
+            if st.session_state.get('model_r2', 0.0) >= 0.80:
                 new_data.to_csv('prediksi.csv', index=False)
                 st.success("Database berhasil diperbarui")
             else:
