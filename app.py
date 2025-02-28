@@ -994,7 +994,7 @@ Bot berhasil dikonfigurasi dan berjalan dengan baik.
 
         # Initialize session state for graph visibility if not already set
         if 'show_graphs' not in st.session_state:
-            st.session_state.show_graphs = True  # Default to showing graphs
+            st.session_state.show_graphs = False  # Default to showing graphs
 
         # Add toggle for graph visibility
         show_graphs = st.checkbox(
