@@ -723,7 +723,7 @@ if os.path.exists('prediksi.csv') and st.session_state.get('show_graphs', False)
             
             if date_col and not hist_data[date_col].isna().all():
                 # Convert to datetime if needed
-                hist_data[date_col] = pd.to_datetime(hist_data[date_col])
+                hist_data[date_col] = pd.to_datetime(date_col)
                 hist_data = hist_data.sort_values(by=date_col)
                 
                 # Time series plot
@@ -1082,6 +1082,53 @@ File data setelah pembersihan duplikasi:
 
         # Show current status
         st.write(f"Status Grafik: {'Ditampilkan' if show_graphs else 'Disembunyikan'}")
+
+        # Add this code right before the "Cek Model dengan Data Terbaru" button
+        if st.button("Latih Model dengan Semua Data", key="train_with_all_data"):
+            with st.spinner("Sedang melatih model dengan semua data tersedia..."):
+                # Force reload of data (bypass cache)
+                st.cache_data.clear()
+                
+                try:
+                    # Load data_kandang.csv
+                    main_data = pd.read_csv('data_kandang.csv')
+                    st.info(f"Data kandang dimuat: {len(main_data)} baris")
+                    
+                    # Load prediksi.csv with proper column mapping
+                    pred_data = pd.read_csv('prediksi.csv')
+                    st.info(f"Data prediksi dimuat: {len(pred_data)} baris")
+                    
+                    # Map columns from prediction data
+                    if 'IP_actual' in pred_data.columns:
+                        pred_data['IP'] = pred_data['IP_actual']  # Use actual IP for training
+                    if 'FCR_actual' in pred_data.columns:
+                        pred_data['FCR'] = pred_data['FCR_actual']
+                        
+                    # Select only the required columns for training
+                    required_cols = ['Age', 'Total_Body_Weight', 'FCR', 'Live_Bird', 
+                                    'Ayam_Dipelihara', 'persen_Live_Bird', 'IP']
+                    
+                    # Filter dataframes to include only rows with all required columns
+                    main_valid = main_data.dropna(subset=required_cols)
+                    pred_valid = pred_data.dropna(subset=required_cols)
+                    
+                    # Combine datasets
+                    combined_data = pd.concat([main_valid, pred_valid], ignore_index=True)
+                    st.success(f"Data gabungan: {len(combined_data)} baris")
+                    
+                    # Train model with combined data
+                    model, mse, r2 = train_model(combined_data)
+                    
+                    # Save model if R² is good enough
+                    if r2 >= MIN_R2_THRESHOLD:
+                        joblib.dump(model, 'poultry_rf_model.joblib')
+                        st.session_state.model_r2 = r2
+                        st.success(f"Model berhasil dilatih! R² = {r2:.2f}, MSE = {mse:.2f}")
+                    else:
+                        st.warning(f"R² model ({r2:.2f}) di bawah threshold ({MIN_R2_THRESHOLD})")
+                
+                except Exception as e:
+                    st.error(f"Error: {str(e)}")
 
 # Information section
 st.write("---")
