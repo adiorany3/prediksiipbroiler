@@ -7,9 +7,17 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from unittest.mock import patch, MagicMock
-from app import load_data, train_model, interpret_ip, generate_sample_data, toggle_telegram_bot, get_telegram_bot_status, send_to_telegram
+
+# Import from test_setup instead of app directly
+from test_setup import load_data, train_model, interpret_ip, generate_sample_data
+from test_setup import toggle_telegram_bot, get_telegram_bot_status, send_to_telegram
 
 
+# Mock streamlit secrets before importing from app
+@patch("streamlit.secrets", new={
+    "TELEGRAM_BOT_TOKEN": "test_token",
+    "TELEGRAM_CHAT_ID": "test_chat_id"
+})
 class TestApp(unittest.TestCase):
 
     def setUp(self):
@@ -180,14 +188,14 @@ class TestApp(unittest.TestCase):
         missing_r2 = r2_score(y_test, missing_pred)
         self.assertGreater(missing_r2, 0.5, "Model performs poorly with missing data")
 
-    @patch('app.os.path.exists')
-    @patch('app.pd.read_csv')
+    @patch('test_setup.os.path.exists')
+    @patch('test_setup.pd.read_csv')
     def test_load_data_with_missing_file(self, mock_read_csv, mock_exists):
         """Test load_data with missing file scenario"""
         mock_exists.return_value = False  # File doesn't exist
         
         # Mock generate_sample_data
-        with patch('app.generate_sample_data') as mock_generate:
+        with patch('test_setup.generate_sample_data') as mock_generate:
             mock_sample_data = pd.DataFrame({
                 'Age': [30], 'Total_Body_Weight': [5000], 'FCR': [1.5],
                 'Live_Bird': [9500], 'Ayam_Dipelihara': [10000], 
@@ -212,7 +220,7 @@ class TestApp(unittest.TestCase):
             
         try:
             # Test with patched file path
-            with patch('app.os.path.exists') as mock_exists, \
+            with patch('test_setup.os.path.exists') as mock_exists, \
                  patch('builtins.open', create=True) as mock_open:
                 
                 # Mock file handling
@@ -246,8 +254,8 @@ class TestApp(unittest.TestCase):
             if os.path.exists(temp_path):
                 os.unlink(temp_path)
     
-    @patch('app.requests.post')
-    @patch('app.get_telegram_bot_status')
+    @patch('test_setup.requests.post')
+    @patch('test_setup.get_telegram_bot_status')
     def test_send_to_telegram(self, mock_status, mock_post):
         """Test Telegram notification sending"""
         # Configure mocks
@@ -275,7 +283,7 @@ class TestApp(unittest.TestCase):
         
         # Test sending files (with mocked file existence)
         mock_status.return_value = True
-        with patch('app.os.path.exists') as mock_exists:
+        with patch('test_setup.os.path.exists') as mock_exists:
             mock_exists.return_value = True
             with patch('builtins.open', create=True) as mock_open:
                 mock_file = MagicMock()
@@ -302,8 +310,8 @@ class TestApp(unittest.TestCase):
         })
         
         # With patched load_data to use our test dataframe
-        with patch('app.pd.read_csv') as mock_read_csv, \
-             patch('app.os.path.exists') as mock_exists:
+        with patch('test_setup.pd.read_csv') as mock_read_csv, \
+             patch('test_setup.os.path.exists') as mock_exists:
             
             mock_exists.return_value = True
             mock_read_csv.return_value = alt_data
