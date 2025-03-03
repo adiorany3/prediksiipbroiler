@@ -723,7 +723,7 @@ if os.path.exists('prediksi.csv') and st.session_state.get('show_graphs', False)
             
             if date_col and not hist_data[date_col].isna().all():
                 # Convert to datetime if needed
-                hist_data[date_col] = pd.to_datetime(date_col)
+                hist_data[date_col] = pd.to_datetime(hist_data[date_col])  # Fixed: Convert the column data, not the column name
                 hist_data = hist_data.sort_values(by=date_col)
                 
                 # Time series plot
