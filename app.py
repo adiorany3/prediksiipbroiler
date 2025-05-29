@@ -230,7 +230,7 @@ def generate_sample_data():
     # Calculate IP values
     y_train = np.zeros(n_samples)
     for i in range(n_samples):
-        if X_train[i, 0] > 0 and X_train[i, 2] > 0:
+        if X_train[i, 0] > 0 and X_train[i, 2] > 0 and X_train[i, 3] > 0:
             y_train[i] = ((X_train[i, 5] * (X_train[i, 1]/X_train[i, 3])) / (X_train[i, 2] * X_train[i, 0])) * 100
     
     df = pd.DataFrame(
@@ -360,12 +360,12 @@ def send_to_telegram(message, files=None):
                     api_url = f'https://api.telegram.org/bot{bot_token}/sendDocument'
                     
                     # Prepare the file for upload
-                    with open(file_name, 'rb') as file:
-                        files = {'document': file}
+                    with open(file_name, 'rb') as file_content:
+                        files_payload = {'document': file_content}
                         data = {'chat_id': chat_id, 'caption': caption}
                         
                         # Upload the file
-                        file_response = requests.post(api_url, data=data, files=files)
+                        file_response = requests.post(api_url, data=data, files=files_payload)
         
         return response.json()
     except Exception as e:
@@ -723,7 +723,7 @@ if os.path.exists('prediksi.csv') and st.session_state.get('show_graphs', False)
             
             if date_col and not hist_data[date_col].isna().all():
                 # Convert to datetime if needed
-                hist_data[date_col] = pd.to_datetime(hist_data[date_col])  # Fixed: Convert the column data, not the column name
+                hist_data[date_col] = pd.to_datetime(hist_data[date_col], errors='coerce')  # Fixed: Convert the column data, not the column name
                 hist_data = hist_data.sort_values(by=date_col)
                 
                 # Time series plot
