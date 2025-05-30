@@ -33,12 +33,12 @@ This project was created by Galuh Adi Insani.
 **Steps:**
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/adiorany3/your-repo-name.git 
+    git clone https://github.com/adiorany3/prediksiipbroiler.git 
     ```
     (Replace the URL with the actual repository URL if available, or instruct users to clone the current repository they are viewing).
 2.  Navigate to the project directory:
     ```bash
-    cd your-repo-name 
+    cd prediksiipbroiler 
     ```
     (Replace `your-repo-name` with the actual directory name).
 3.  Install dependencies:
